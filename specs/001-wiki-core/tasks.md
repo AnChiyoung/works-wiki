@@ -26,29 +26,29 @@
 
 ## 0단계: 준비
 
-- [ ] **T001 저장소 시작**
+- [x] **T001 저장소 시작**
   - git 저장소를 만들고 `.gitignore`에 `node_modules/`, `.next/`, `data/`, `.env*`(`.env.example` 제외), `test-results/`를 넣는다.
   - 완료 조건: 첫 커밋에 현재 `README.md`, `specs/`가 들어가 있다.
 
-- [ ] **T002 Next.js 프로젝트 생성**
+- [x] **T002 Next.js 프로젝트 생성**
   - TypeScript, App Router, `src/` 폴더, ESLint 사용으로 생성한다. Tailwind는 쓰지 않는다(CSS Modules 사용).
   - [plan.md §3](plan.md#3-폴더-구조-예정)의 폴더(`src/app`, `src/components`, `src/server`, `src/styles`, `scripts`, `tests`)를 만든다.
   - 완료 조건: `npm run dev`로 기본 화면이 뜨고 `npm run build`가 성공한다.
 
-- [ ] **T003 [P] 코드 품질 도구와 명령어**
+- [x] **T003 [P] 코드 품질 도구와 명령어**
   - Prettier 설정, ESLint 규칙 정리, TypeScript `strict` 켜기.
   - npm 명령어: `dev`, `build`, `start`, `lint`, `typecheck`, `test`, `test:e2e`, `db:migrate`, `db:seed`.
   - 완료 조건: `npm run lint`, `npm run typecheck`가 오류 없이 끝난다.
 
-- [ ] **T004 [P] 단위 테스트 환경 (Vitest)**
+- [x] **T004 [P] 단위 테스트 환경 (Vitest)**
   - `tests/unit/`에 테스트를 두고, `@/` 경로 별칭이 동작하게 한다.
   - 완료 조건: 샘플 테스트 1개가 `npm test`로 통과한다.
 
-- [ ] **T005 [P] 화면 테스트 환경 (Playwright)**
+- [x] **T005 [P] 화면 테스트 환경 (Playwright)**
   - 테스트 실행 시 개발 서버를 자동으로 띄우고, 테스트 전용 데이터 폴더(`data-test/`)를 쓰게 한다.
   - 완료 조건: 기본 화면을 여는 샘플 테스트가 `npm run test:e2e`로 통과한다.
 
-- [ ] **T006 [P] 환경 설정**
+- [x] **T006 [P] 환경 설정**
   - `src/server/config.ts`: `DATA_DIR`(기본 `./data`), `WIKI_OPEN_EDIT`(기본 `false`), `WIKI_NAME`(기본 `"개발 위키"`)를 zod로 검증해 읽는다.
   - `.env.example`에 각 값의 설명을 적는다.
   - 완료 조건: 값이 잘못되면 서버가 시작하지 않고 어떤 값이 문제인지 알려준다.
