@@ -241,9 +241,9 @@
   - 완료 조건: 서비스 단위 테스트(아이디 규칙, 중복, 비밀번호 길이) 통과, 실제 명령어로 관리자를 만들어 로그인까지 확인.
   - 진행 메모: 명령어로 만든 관리자의 비밀번호 검증까지 확인했다. 화면 로그인 확인은 로그인 화면(T034)이 생긴 뒤 T037에서 한다.
 
-- [ ] **T031 세션 서비스** — AC-8.2
+- [x] **T031 세션 서비스** — AC-8.2
   - `src/server/services/auth.ts`: `login(username, password)` → 세션 생성, `logout(sessionId)`, `getSessionUser(sessionId)` (만료·차단 회원 거부, 기간 연장).
-  - 쿠키: `HttpOnly; SameSite=Lax; Path=/`, 운영(https)에서는 `Secure`. 로그인할 때마다 새 세션 ID.
+  - 쿠키: `HttpOnly; SameSite=Lax; Path=/`, https 요청이면 `Secure`. 로그인할 때마다 새 세션 ID. 쿠키는 400일 두고 만료는 DB로 판단(서버 컴포넌트에서 쿠키를 고칠 수 없어서).
   - `src/server/current-user.ts`: 서버 컴포넌트·서버 액션·API 라우트에서 쓰는 `getCurrentUser()`.
   - 테스트: 로그인 성공·실패, 만료된 세션, 로그아웃한 세션 재사용 거부, `system` 사용자 로그인 불가, 차단 회원 로그인 불가.
   - 완료 조건: 위 테스트 통과.

@@ -243,7 +243,7 @@ POST로 적은 동작은 대부분 해당 페이지의 서버 액션으로 구�
 | GET | `/admin/audit` | 감사 로그 | AC-9.7 |
 
 ## 7. 보안 설계
-- **세션**: DB 세션 + `HttpOnly; SameSite=Lax; Path=/` 쿠키, https로 공개할 때는 `Secure`도 붙인다. 로그인할 때마다 새 토큰(32바이트 난수)을 발급하고, DB에는 토큰의 SHA-256 해시만 저장한다. 유효 기간 30일, 남은 기간이 15일 아래면 요청 때 연장(AC-8.2).
+- **세션**: DB 세션 + `HttpOnly; SameSite=Lax; Path=/` 쿠키, https로 공개할 때는 `Secure`도 붙인다. 로그인할 때마다 새 토큰(32바이트 난수)을 발급하고, DB에는 토큰의 SHA-256 해시만 저장한다. 유효 기간 30일, 남은 기간이 15일 아래면 요청 때 연장(AC-8.2). 서버 컴포넌트에서는 쿠키를 고칠 수 없으므로, 쿠키는 브라우저 상한(400일) 동안 두고 만료는 DB의 `expires_at`으로만 판단한다. `Secure`는 요청이 https일 때(`x-forwarded-proto: https`) 붙인다.
 - **CSRF**: 서버 액션은 Next.js의 Origin 검사를 사용하고, 직접 만든 POST API 라우트(`/api/*`)에도 같은 Origin 검사를 넣는다.
 - **XSS**: 마크업 렌더링 결과를 sanitize-html의 허용 목록으로 정화한 뒤에만 화면에 넣는다. CSP 등 보안 헤더는 `next.config`의 `headers()`로 적용.
 - **권한**: 화면(페이지)에서 버튼을 숨기는 것과 별개로, 모든 서버 액션·API 라우트 첫 줄에서 `can()`을 호출한다.
