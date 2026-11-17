@@ -49,7 +49,7 @@ const OPTIONS: sanitizeHtml.IOptions = {
     ...Object.fromEntries(HEADINGS.map((h) => [h, ['wiki-heading']])),
     a: ['external', 'heading-number'],
     code: ['language-*'],
-    span: ['heading-text'],
+    span: ['heading-text', 'heading-number'],
     nav: ['toc'],
     li: ['toc-item', 'toc-depth-*'],
     p: ['toc-title'],

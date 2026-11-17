@@ -1,4 +1,5 @@
 import MarkdownIt, { type MarkdownIt as MarkdownItInstance } from 'markdown-it';
+import { headingsPlugin } from './plugins/headings';
 import { sanitize } from './sanitize';
 
 // 위키 원문 → 안전한 HTML. 규칙: specs/001-wiki-core/syntax.md
@@ -57,6 +58,8 @@ function createMarkdown(): MarkdownItInstance {
     token.attrSet('loading', 'lazy');
     return defaultImage(tokens, idx, options, env, self);
   };
+
+  md.use(headingsPlugin); // SX-10~17
 
   return md;
 }
