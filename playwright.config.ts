@@ -18,7 +18,8 @@ export default defineConfig({
     { name: 'mobile', use: { ...devices['Pixel 7'] } },
   ],
   webServer: {
-    command: `npx next dev --hostname 127.0.0.1 --port ${PORT}`,
+    // 매번 빈 테스트 데이터로 시작한다
+    command: `node -e "require('fs').rmSync('data-test',{recursive:true,force:true})" && npx next dev --hostname 127.0.0.1 --port ${PORT}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
