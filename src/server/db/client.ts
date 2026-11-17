@@ -8,6 +8,10 @@ import * as schema from './schema';
 // 브라우저 번들 차단은 앱이 쓰는 입구인 ./index.ts가 맡는다.
 
 export type Db = BetterSQLite3Database<typeof schema> & { $client: Database.Database };
+/** db.transaction() 콜백이 받는 트랜잭션 객체 */
+export type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
+/** DB 연결이나 트랜잭션 어느 쪽에서든 실행할 수 있는 함수가 받는 타입 */
+export type DbOrTx = Db | Tx;
 
 const MIGRATIONS_FOLDER = path.resolve(process.cwd(), 'src/server/db/migrations');
 

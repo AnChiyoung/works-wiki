@@ -1,4 +1,6 @@
-// 서버가 시작될 때 한 번 실행된다. 설정이 잘못되었으면 이유를 알려주고 서버를 끈다.
+// 서버가 시작될 때 한 번 실행된다.
+// 1) 설정이 잘못되었으면 이유를 알려주고 서버를 끈다.
+// 2) DB 마이그레이션과 기본 데이터를 적용한다. (이미 적용되어 있으면 아무것도 하지 않는다)
 export async function register() {
   if (process.env.NEXT_RUNTIME !== 'nodejs') return;
 
@@ -12,4 +14,8 @@ export async function register() {
     }
     throw error;
   }
+
+  const { getDb } = await import('@/server/db');
+  const { initDatabase } = await import('@/server/db/seed');
+  initDatabase(getDb());
 }
