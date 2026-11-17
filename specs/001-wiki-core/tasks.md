@@ -55,21 +55,21 @@
 
 ## 1단계: 데이터베이스
 
-- [ ] **T007 DB 연결**
+- [x] **T007 DB 연결**
   - better-sqlite3 + Drizzle 연결 모듈 (`src/server/db/index.ts`, `server-only`).
   - 연결 시 `journal_mode=WAL`, `foreign_keys=ON` 설정. DB 파일은 `DATA_DIR/wiki.db`.
   - 완료 조건: 개발 서버를 여러 번 새로 고쳐도 연결이 하나만 유지된다(개발 모드 핫 리로드 대응).
 
-- [ ] **T008 M1 스키마**
+- [x] **T008 M1 스키마**
   - [plan.md §4](plan.md#4-데이터-모델) 중 `users`, `pages`, `revisions`, `settings` 테이블을 Drizzle 스키마로 만들고 마이그레이션을 생성한다.
   - 나머지 테이블(세션, 권한, 링크, 분류, 파일, 감사 로그, 검색)은 해당 단계에서 마이그레이션으로 추가한다.
   - 완료 조건: `npm run db:migrate`로 빈 DB에 테이블이 생기고, 두 번 실행해도 오류가 없다.
 
-- [ ] **T009 기본 데이터**
+- [x] **T009 기본 데이터**
   - `npm run db:seed`: 내장 `system` 사용자(로그인 불가)와 `대문` 문서(위키 소개 + 문법 예시)를 만든다. 이미 있으면 건너뛴다.
   - 완료 조건: 빈 DB에서 migrate → seed 후 `대문` 문서의 1판이 존재한다.
 
-- [ ] **T010 [P] 테스트용 DB 도우미**
+- [x] **T010 [P] 테스트용 DB 도우미**
   - 테스트마다 메모리 DB를 만들고 마이그레이션·시드를 적용하는 도우미 (`tests/helpers/db.ts`).
   - 완료 조건: 두 테스트가 서로의 데이터를 보지 않는다.
 
