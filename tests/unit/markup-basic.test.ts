@@ -103,3 +103,11 @@ describe('안전 규칙 (T014, SX-46~48)', () => {
     expect(out).not.toMatch(/<span/);
   });
 });
+
+describe('번호 목록 (SX-20)', () => {
+  it('쓴 숫자와 상관없이 1부터 매긴다 (start 속성을 넣지 않는다)', () => {
+    const out = renderMarkup('3. 셋\n7. 일곱').html;
+    expect(out).toContain('<ol>');
+    expect(out).not.toContain('start=');
+  });
+});

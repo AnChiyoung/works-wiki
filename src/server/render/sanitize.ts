@@ -36,7 +36,7 @@ const OPTIONS: sanitizeHtml.IOptions = {
     ...Object.fromEntries(HEADINGS.map((h) => [h, ['id', 'class', 'data-level']])),
     a: ['href', 'title', 'target', 'rel', 'class'],
     img: ['src', 'alt', 'title', 'loading'],
-    ol: ['start'],
+    // ol의 start는 넣지 않는다: 번호 목록은 쓴 숫자와 상관없이 1부터 매긴다 (SX-20)
     th: ['style'],
     td: ['style'],
     code: ['class'],

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import '@/styles/globals.css';
+import '@/styles/wiki-content.css';
 
 export const metadata: Metadata = {
   title: '개발 위키',

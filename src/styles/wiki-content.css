@@ -1,0 +1,205 @@
+/* 문서 본문 스타일. 렌더러가 만든 HTML을 .wiki-content 안에 넣어 쓴다. (syntax.md) */
+
+.wiki-content {
+  font-size: 1rem;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
+}
+
+.wiki-content > :first-child {
+  margin-top: 0;
+}
+
+.wiki-content p {
+  margin: 0 0 1em;
+}
+
+/* ── 제목: 깊이별 크기 (SX-10~13). 태그는 깊이 + 1 ── */
+.wiki-heading {
+  position: relative;
+  margin: 1.8em 0 0.6em;
+  line-height: 1.35;
+  font-weight: 700;
+  cursor: pointer; /* 누르면 문단 접기 (SX-18, T023) */
+  scroll-margin-top: 1rem;
+}
+
+.wiki-content h2.wiki-heading {
+  font-size: 1.6rem;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--border);
+}
+.wiki-content h3.wiki-heading {
+  font-size: 1.35rem;
+}
+.wiki-content h4.wiki-heading {
+  font-size: 1.18rem;
+}
+.wiki-content h5.wiki-heading {
+  font-size: 1.06rem;
+}
+.wiki-content h6.wiki-heading {
+  font-size: 1rem;
+}
+
+.heading-number {
+  color: var(--accent);
+  text-decoration: none;
+  margin-right: 0.15em;
+}
+a.heading-number:hover {
+  text-decoration: underline;
+}
+
+/* 접힌 문단 (T023에서 클래스를 붙인다) */
+.wiki-heading.is-collapsed {
+  opacity: 0.7;
+}
+.wiki-section-hidden {
+  display: none !important;
+}
+
+/* ── 목차 (SX-16) ── */
+.toc {
+  display: inline-block;
+  min-width: min(18rem, 100%);
+  max-width: 100%;
+  margin: 0.5em 0 1.5em;
+  padding: 0.8em 1.2em;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+}
+.toc-title {
+  margin: 0 0 0.4em;
+  font-weight: 700;
+}
+.wiki-content .toc ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.toc-item {
+  margin: 0.15em 0;
+}
+.toc-item > a {
+  color: var(--accent);
+  text-decoration: none;
+}
+.toc-depth-2 {
+  padding-left: 1.2em;
+}
+.toc-depth-3 {
+  padding-left: 2.4em;
+}
+.toc-depth-4 {
+  padding-left: 3.6em;
+}
+.toc-depth-5,
+.toc-depth-6 {
+  padding-left: 4.8em;
+}
+
+/* ── 목록: 깊이별 기호 (SX-19~21). 4단계부터는 3단계 모양 반복 ── */
+.wiki-content ul,
+.wiki-content ol {
+  margin: 0 0 1em;
+  padding-left: 1.6em;
+}
+.wiki-content li > ul,
+.wiki-content li > ol {
+  margin-bottom: 0;
+}
+.wiki-content ul {
+  list-style-type: disc; /* ● */
+}
+.wiki-content ul ul {
+  list-style-type: circle; /* ○ */
+}
+.wiki-content ul ul ul {
+  list-style-type: square; /* ■ */
+}
+.wiki-content ol {
+  list-style-type: decimal; /* 1. */
+}
+.wiki-content ol ol {
+  list-style-type: lower-alpha; /* a. */
+}
+.wiki-content ol ol ol {
+  list-style-type: lower-roman; /* i. */
+}
+
+/* ── 링크 (SX-8) ── */
+.wiki-content a {
+  color: var(--link);
+}
+.wiki-content a.external::after {
+  content: '↗';
+  display: inline-block;
+  margin-left: 0.15em;
+  font-size: 0.8em;
+  text-decoration: none;
+}
+
+/* ── 코드 (SX-4, SX-6. 문법 강조는 M4) ── */
+.wiki-content code {
+  font-family: 'D2Coding', 'JetBrains Mono', Consolas, 'Courier New', monospace;
+  font-size: 0.9em;
+  padding: 0.15em 0.35em;
+  border-radius: 4px;
+  background: var(--code-bg);
+}
+.wiki-content pre {
+  margin: 0 0 1em;
+  padding: 0.9em 1em;
+  overflow-x: auto; /* 긴 줄은 가로 스크롤 */
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--code-bg);
+  line-height: 1.5;
+}
+.wiki-content pre code {
+  padding: 0;
+  background: none;
+  font-size: 0.875rem;
+}
+
+/* ── 인용, 구분선 (SX-5, SX-7) ── */
+.wiki-content blockquote {
+  margin: 0 0 1em;
+  padding: 0.2em 1em;
+  border-left: 4px solid var(--border);
+  color: var(--muted);
+}
+.wiki-content blockquote > :last-child {
+  margin-bottom: 0;
+}
+.wiki-content hr {
+  margin: 1.5em 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+/* ── 표 (SX-9). 좁은 화면에서는 표만 가로 스크롤 ── */
+.wiki-content table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+}
+.wiki-content th,
+.wiki-content td {
+  padding: 0.4em 0.8em;
+  border: 1px solid var(--border);
+}
+.wiki-content th {
+  background: var(--surface);
+  font-weight: 700;
+}
+
+/* ── 이미지 ── */
+.wiki-content img {
+  max-width: 100%;
+  height: auto;
+}
