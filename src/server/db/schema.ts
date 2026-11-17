@@ -1,15 +1,17 @@
 import { sql } from 'drizzle-orm';
 import {
   type AnySQLiteColumn,
+  check,
   index,
   integer,
+  primaryKey,
   sqliteTable,
   text,
   uniqueIndex,
 } from 'drizzle-orm/sqlite-core';
 
 // 데이터 모델: specs/001-wiki-core/plan.md §4
-// M1에서는 users, pages, revisions, settings만 만든다. 나머지 테이블은 해당 단계에서 추가한다.
+// 각 테이블은 필요한 단계에서 추가한다. (M1: users, pages, revisions, settings / M2: sessions, user_permissions)
 
 const createdAt = () =>
   integer('created_at', { mode: 'timestamp_ms' })
@@ -85,7 +87,49 @@ export const settings = sqliteTable('settings', {
   value: text('value').notNull(),
 });
 
+/** 로그인 세션. id는 쿠키에 담는 토큰 원문이 아니라 그 SHA-256 해시다 (plan.md §7) */
+export const sessions = sqliteTable(
+  'sessions',
+  {
+    id: text('id').primaryKey(),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    createdAt: createdAt(),
+    expiresAt: integer('expires_at', { mode: 'timestamp_ms' }).notNull(),
+  },
+  (t) => [index('sessions_user_id_idx').on(t.userId)],
+);
+
+export const PERMISSIONS = ['edit', 'create', 'move', 'upload'] as const;
+
+/** 회원별 기능 권한. 관리자는 행이 없어도 모든 권한을 가진다 */
+export const userPermissions = sqliteTable(
+  'user_permissions',
+  {
+    userId: integer('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    permission: text('permission', { enum: PERMISSIONS }).notNull(),
+    grantedBy: integer('granted_by')
+      .notNull()
+      .references(() => users.id),
+    grantedAt: integer('granted_at', { mode: 'timestamp_ms' })
+      .notNull()
+      .default(sql`(unixepoch('subsec') * 1000)`),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.permission] }),
+    check(
+      'user_permissions_permission_check',
+      sql.raw(`permission in (${PERMISSIONS.map((p) => `'${p}'`).join(', ')})`),
+    ),
+  ],
+);
+
 export type User = typeof users.$inferSelect;
 export type Page = typeof pages.$inferSelect;
 export type Revision = typeof revisions.$inferSelect;
+export type Session = typeof sessions.$inferSelect;
+export type Permission = (typeof PERMISSIONS)[number];
 export type Namespace = (typeof NAMESPACES)[number];
