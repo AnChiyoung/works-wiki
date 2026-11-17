@@ -1,0 +1,29 @@
+# 의존성
+node_modules/
+
+# Next.js 빌드
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# 위키 데이터 (DB, 업로드, 백업) — 저장소에 올리지 않는다
+data/
+data-test/
+
+# 환경 변수 (비밀값). 예시 파일만 올린다
+.env*
+!.env.example
+
+# 테스트 결과
+test-results/
+playwright-report/
+coverage/
+
+# 로그, OS
+*.log
+.DS_Store
+Thumbs.db
+
+# Windows 폴더 설정 파일
+desktop.ini
