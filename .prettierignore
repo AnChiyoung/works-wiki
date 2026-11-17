@@ -1,0 +1,12 @@
+.next/
+out/
+node_modules/
+data/
+data-test/
+test-results/
+playwright-report/
+package-lock.json
+src/server/db/migrations/
+# 스펙 문서는 손으로 정리한 표 서식을 유지한다
+specs/
+README.md
