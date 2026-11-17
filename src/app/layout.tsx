@@ -1,16 +1,33 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
+import { SiteHeader } from '@/components/SiteHeader';
+import { getConfig } from '@/server/config';
 import '@/styles/globals.css';
 import '@/styles/wiki-content.css';
+import styles from './layout.module.css';
 
-export const metadata: Metadata = {
-  title: '개발 위키',
-  description: '개발 지식을 정리하는 위키',
+// 위키 이름 등 설정값을 빌드할 때가 아니라 요청할 때 읽도록 한다. (.env.local을 바꾸고 재시작만 하면 반영)
+export const dynamic = 'force-dynamic';
+
+export function generateMetadata(): Metadata {
+  const { wikiName } = getConfig();
+  return {
+    title: { default: wikiName, template: `%s - ${wikiName}` },
+    description: '개발 지식을 정리하는 위키',
+  };
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body>
+        <SiteHeader wikiName={getConfig().wikiName} />
+        <main className={styles.main}>{children}</main>
+      </body>
     </html>
   );
 }

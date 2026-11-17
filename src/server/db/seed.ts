@@ -4,7 +4,8 @@ import { migrateDatabase } from './client';
 import { pages, revisions, users } from './schema';
 
 export const SYSTEM_USERNAME = 'system';
-export const MAIN_PAGE_TITLE = '대문';
+export { MAIN_PAGE_TITLE } from '@/lib/wiki';
+import { MAIN_PAGE_TITLE } from '@/lib/wiki';
 
 const MAIN_PAGE_CONTENT = `개발 지식을 정리하는 위키입니다.
 
