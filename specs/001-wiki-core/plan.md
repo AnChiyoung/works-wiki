@@ -95,7 +95,7 @@ users
   id              INTEGER PK
   username        TEXT UNIQUE NOT NULL
   password_hash   TEXT NOT NULL
-  role            TEXT NOT NULL   -- admin | member
+  role            TEXT NOT NULL   -- admin | member | system (자동 작업용, 로그인 불가)
   status          TEXT NOT NULL   -- pending | active | blocked
   created_at      INTEGER NOT NULL
 
