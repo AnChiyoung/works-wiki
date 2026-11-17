@@ -20,7 +20,7 @@
 | 마크업 | markdown-it (`html: false`) + 각주(markdown-it-footnote) + 접기(markdown-it-container) + 직접 만드는 플러그인(위키 링크, 색·크기, 제목 번호) | 확장이 쉬움. 규칙은 [syntax.md](syntax.md) |
 | HTML 정화 | sanitize-html | XSS 방지 ([원칙 5](../constitution.md)) |
 | 차이 비교 | jsdiff | 판 비교 화면 |
-| 비밀번호 | argon2 (argon2id) | 현재 권장되는 해시 방식 |
+| 비밀번호 | @node-rs/argon2 (argon2id) | 현재 권장되는 해시 방식. 미리 빌드된 파일로 설치되어 설치 스크립트가 필요 없음 |
 | 이미지 판별 | file-type | 확장자가 아닌 실제 내용으로 형식 판별 |
 | 테스트 | Vitest (서비스·렌더러) + Playwright (화면 흐름) | 수용 기준을 단위·화면 수준에서 검증 |
 | 외부 공개 | Cloudflare Tunnel | 공유기 포트를 열지 않고 공개 |
@@ -111,8 +111,9 @@ settings            -- 위키 전체 설정
   value           TEXT NOT NULL   -- 예: 'false' (기본값)
 
 sessions
-  id              TEXT PK         -- 난수 토큰
+  id              TEXT PK         -- 난수 토큰의 SHA-256 해시 (토큰 원문은 쿠키에만)
   user_id         INTEGER FK → users
+  created_at      INTEGER NOT NULL
   expires_at      INTEGER NOT NULL
 
 pages
@@ -242,13 +243,14 @@ POST로 적은 동작은 대부분 해당 페이지의 서버 액션으로 구�
 | GET | `/admin/audit` | 감사 로그 | AC-9.7 |
 
 ## 7. 보안 설계
-- **세션**: DB 세션 + `HttpOnly; Secure; SameSite=Lax` 쿠키. 로그인 시 세션 ID 재발급.
+- **세션**: DB 세션 + `HttpOnly; SameSite=Lax; Path=/` 쿠키, https로 공개할 때는 `Secure`도 붙인다. 로그인할 때마다 새 토큰(32바이트 난수)을 발급하고, DB에는 토큰의 SHA-256 해시만 저장한다. 유효 기간 30일, 남은 기간이 15일 아래면 요청 때 연장(AC-8.2).
 - **CSRF**: 서버 액션은 Next.js의 Origin 검사를 사용하고, 직접 만든 POST API 라우트(`/api/*`)에도 같은 Origin 검사를 넣는다.
 - **XSS**: 마크업 렌더링 결과를 sanitize-html의 허용 목록으로 정화한 뒤에만 화면에 넣는다. CSP 등 보안 헤더는 `next.config`의 `headers()`로 적용.
 - **권한**: 화면(페이지)에서 버튼을 숨기는 것과 별개로, 모든 서버 액션·API 라우트 첫 줄에서 `can()`을 호출한다.
-- **횟수 제한**: 로그인·가입 액션에 IP별 제한 (메모리 기반 간단한 제한기, 서버 한 대 기준).
+- **횟수 제한**: 로그인·가입 액션에 IP별 제한 (메모리 기반 간단한 제한기, 서버 한 대 기준). 로그인은 15분 안에 5번 실패하면 15분 거부(AC-8.3). 서버를 재시작하면 기록이 초기화되는 것은 허용한다. Cloudflare Tunnel 뒤에서는 `CF-Connecting-IP` 헤더로 실제 IP를 얻는다(M7에서 확인).
 - **업로드**: 내용 기반 형식 검사, 저장 파일명은 해시값 사용, 업로드 폴더에서 실행 불가.
-- **비밀값**: 세션 비밀키 등은 `.env`에 두고 git에 올리지 않는다.
+- **비밀번호**: argon2id로 해시한다. 비밀번호 원문은 로그·DB·명령행 인자 어디에도 남기지 않는다. 없는 아이디로 로그인해도 해시 검증을 한 번 수행해, 응답 시간으로 아이디가 있는지 알 수 없게 한다.
+- **비밀값**: 비밀값은 `.env`에 두고 git에 올리지 않는다. (세션 토큰을 DB에 해시로 저장하므로 M2에서는 별도 세션 비밀키가 필요 없다.)
 
 ## 8. 운영
 - **실행**: 개발은 `npm run dev`, 운영은 `npm run build` 후 `next start`를 Windows 서비스로 등록(예: NSSM 또는 pm2)해 PC 부팅 시 자동 시작.
@@ -268,7 +270,7 @@ POST로 적은 동작은 대부분 해당 페이지의 서버 액션으로 구�
 | 단계 | 내용 | 관련 스펙 |
 |---|---|---|
 | M1 | 프로젝트 골격, DB 스키마, 문서 열람·편집(로그인 없이 로컬 전용) | US-1, US-2 |
-| M2 | 첫 관리자 생성, 로그인·세션, 관리자만 편집 가능하게 | AC-8.1~8.3, AC-2.1 |
+| M2 | 첫 관리자 생성, 로그인·세션, 관리자만 편집 가능하게 | AC-8.1~8.3, AC-8.7, AC-2.1 |
 | M3 | 이력·차이·되돌리기, 편집 충돌 | US-4, AC-2.5 |
 | M4 | 위키 링크·빨간 링크·분류·각주·역링크, 검색, 최근 변경 | US-3, US-5 |
 | M5 | 문서 이동·넘겨주기, 파일 업로드 | US-6, US-7 |
