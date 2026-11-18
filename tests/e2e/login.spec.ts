@@ -1,5 +1,5 @@
 import { type Page, expect, test } from '@playwright/test';
-import { E2E_ADMIN } from './accounts';
+import { E2E_ADMIN, LOGGED_OUT } from './accounts';
 import { wikiPath } from './helpers';
 
 let ipCounter = 0;
@@ -27,6 +27,9 @@ const header = (page: Page) => page.getByRole('banner');
 const formAlert = (page: Page) => page.locator('form').getByRole('alert');
 
 test.describe('로그인·로그아웃 (T034, AC-8.2)', () => {
+  // 이 묶음은 로그인하지 않은 상태에서 시작한다
+  test.use({ storageState: LOGGED_OUT });
+
   test.beforeEach(async ({ page }) => {
     await actAsNewVisitor(page);
   });

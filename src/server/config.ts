@@ -4,7 +4,6 @@ import { z } from 'zod';
 
 const envSchema = z.object({
   DATA_DIR: z.string().trim().min(1, '비어 있을 수 없습니다').default('./data'),
-  WIKI_OPEN_EDIT: z.stringbool({ error: 'true 또는 false여야 합니다' }).default(false),
   WIKI_NAME: z
     .string()
     .trim()
@@ -16,8 +15,6 @@ const envSchema = z.object({
 export type Config = {
   /** DB, 업로드 파일, 백업이 저장되는 폴더 (절대 경로) */
   dataDir: string;
-  /** M1 임시: 로그인 없이 편집 허용. M2에서 제거한다. */
-  openEdit: boolean;
   /** 화면에 보이는 위키 이름 */
   wikiName: string;
 };
@@ -35,10 +32,9 @@ export function loadConfig(env: Record<string, string | undefined>, cwd = proces
   if (!result.success) {
     throw new ConfigError(result.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`));
   }
-  const { DATA_DIR, WIKI_OPEN_EDIT, WIKI_NAME } = result.data;
+  const { DATA_DIR, WIKI_NAME } = result.data;
   return {
     dataDir: path.resolve(cwd, DATA_DIR),
-    openEdit: WIKI_OPEN_EDIT,
     wikiName: WIKI_NAME,
   };
 }

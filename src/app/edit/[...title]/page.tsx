@@ -1,9 +1,9 @@
 import type { Metadata } from 'next';
-import { forbidden, notFound } from 'next/navigation';
+import { forbidden, notFound, redirect } from 'next/navigation';
+import { canWriteTitle, getActor } from '@/server/access';
 import { getDb } from '@/server/db';
-import { canEditM1 } from '@/server/edit-guard';
 import { getPage } from '@/server/services/pages';
-import { TitleError, parseTitle, titleFromPathSegments } from '@/server/services/title';
+import { TitleError, parseTitle, titleFromPathSegments, titleToPath } from '@/server/services/title';
 import { EditForm } from './EditForm';
 import styles from './page.module.css';
 
@@ -19,8 +19,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // US-2 문서 작성·편집
 export default async function EditPage({ params }: Props) {
-  if (!canEditM1()) forbidden(); // AC-2.1, T024
-
   const { title } = await params;
   let fullTitle: string;
   try {
@@ -29,6 +27,10 @@ export default async function EditPage({ params }: Props) {
     if (error instanceof TitleError || error instanceof URIError) notFound();
     throw error;
   }
+
+  // AC-2.1: 로그인하지 않았으면 로그인 화면으로, 권한이 없으면 403
+  if (!(await getActor())) redirect(`/login?next=${encodeURIComponent(titleToPath(fullTitle, '/edit'))}`);
+  if (!(await canWriteTitle(fullTitle))) forbidden();
 
   const existing = getPage(getDb(), fullTitle);
   const isNew = !existing?.revision;

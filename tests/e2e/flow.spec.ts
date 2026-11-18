@@ -1,4 +1,5 @@
 import { type Page, expect, test } from '@playwright/test';
+import { E2E_ADMIN } from './accounts';
 import { uniqueTitle, wikiPath } from './helpers';
 
 /** 가로 스크롤이 생기지 않았는지 (T017: 360px 이상에서 가로 스크롤 없음) */
@@ -75,7 +76,8 @@ test.describe('M1 전체 흐름 (T025)', () => {
     await expect(page.getByRole('heading', { name: '2. 참고' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'cppreference' })).toHaveAttribute('target', '_blank');
     await expect(page.locator('footer')).toContainText('마지막 수정');
-    await expect(page.locator('footer')).toContainText('system');
+    // M2부터 수정자는 로그인한 사용자다 (M1에서는 system)
+    await expect(page.locator('footer')).toContainText(E2E_ADMIN.username);
     await expect(page).toHaveTitle(`${title} - 개발 위키`);
     await expectNoHorizontalScroll(page);
 

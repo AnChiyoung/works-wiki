@@ -27,3 +27,6 @@ Thumbs.db
 
 # Windows 폴더 설정 파일
 desktop.ini
+
+# 화면 테스트의 로그인 쿠키
+playwright/.auth/

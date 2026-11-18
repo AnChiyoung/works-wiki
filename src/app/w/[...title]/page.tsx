@@ -3,8 +3,8 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { WikiContent } from '@/components/WikiContent';
 import { formatDateTime, htmlToDescription } from '@/lib/format';
+import { canWriteTitle } from '@/server/access';
 import { getDb } from '@/server/db';
-import { canEditM1 } from '@/server/edit-guard';
 import { renderMarkup } from '@/server/render/markup';
 import { getPage } from '@/server/services/pages';
 import { TitleError, titleFromPathSegments, titleToPath } from '@/server/services/title';
@@ -48,12 +48,13 @@ export default async function WikiPage({ params, searchParams }: Props) {
   const { page, revision } = result;
   const { html } = renderMarkup(revision.content);
   const { notice } = await searchParams;
+  const canEdit = await canWriteTitle(page.fullTitle);
 
   return (
     <article>
       <header className={styles.header}>
         <h1 className={styles.title}>{page.fullTitle}</h1>
-        {canEditM1() && (
+        {canEdit && (
           <nav className={styles.actions} aria-label="문서 동작">
             <Link href={titleToPath(page.fullTitle, '/edit')} className={styles.action}>
               편집

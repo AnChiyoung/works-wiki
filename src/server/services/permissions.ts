@@ -54,3 +54,16 @@ export function getUserPermissions(db: DbOrTx, userId: number): Permission[] {
     .all()
     .map((row) => row.permission);
 }
+
+/**
+ * 문서를 저장(편집 또는 새로 만들기)할 수 있는지.
+ * 판이 있는 문서면 `edit`, 아직 없는 문서면 `create` 권한으로 판단한다.
+ */
+export function canWritePage(
+  actor: Actor | null,
+  target: Pick<PageTarget, 'namespace' | 'title'>,
+  existing: { protection: PageTarget['protection']; hasRevision: boolean } | null,
+): boolean {
+  const page: PageTarget = { ...target, protection: existing?.protection ?? 'none' };
+  return can(actor, existing?.hasRevision ? 'edit' : 'create', page);
+}

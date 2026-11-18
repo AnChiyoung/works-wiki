@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { canEditM1 } from '@/server/edit-guard';
+import { canWriteAny } from '@/server/access';
 import { renderMarkup } from '@/server/render/markup';
 import { MAX_CONTENT_BYTES, normalizeContent } from '@/server/services/pages';
 
@@ -27,8 +27,8 @@ function isSameOrigin(req: Request): boolean {
 }
 
 export async function POST(req: Request) {
-  if (!canEditM1()) return json({ error: '편집 권한이 없습니다.' }, 403); // M2에서 can()으로 교체
   if (!isSameOrigin(req)) return json({ error: '허용되지 않은 요청입니다.' }, 403);
+  if (!(await canWriteAny())) return json({ error: '편집 권한이 없습니다.' }, 403);
 
   if (Number(req.headers.get('content-length') ?? 0) > MAX_BODY_BYTES) {
     return json({ error: '내용이 너무 큽니다.' }, 413);

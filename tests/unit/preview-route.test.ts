@@ -1,16 +1,33 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, describe, expect, it, vi } from 'vitest';
 import { MAX_CONTENT_BYTES } from '@/server/services/pages';
+import { jar } from '../helpers/request-context';
+
+// 권한 확인은 edit-permission.test.ts에서 따로 본다. 여기서는 관리자로 로그인한 상태에서 미리보기 동작만 본다.
+vi.mock('next/headers', () => import('../helpers/request-context'));
 
 const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'wiki-preview-'));
 process.env.DATA_DIR = dataDir;
-process.env.WIKI_OPEN_EDIT = 'true';
 
 const { POST } = await import('@/app/api/preview/route');
+const { getDb } = await import('@/server/db');
+const { initDatabase } = await import('@/server/db/seed');
+const { createUser } = await import('@/server/services/users');
+const { login } = await import('@/server/services/auth');
+const { SESSION_COOKIE } = await import('@/server/current-user');
 
-afterAll(() => fs.rmSync(dataDir, { recursive: true, force: true }));
+initDatabase(getDb());
+await createUser(getDb(), { username: 'owner', password: 'long-enough-1', role: 'admin' });
+const session = await login(getDb(), { username: 'owner', password: 'long-enough-1' });
+if (!session.ok) throw new Error('로그인 실패');
+jar.set(SESSION_COOKIE, session.token);
+
+afterAll(() => {
+  getDb().$client.close();
+  fs.rmSync(dataDir, { recursive: true, force: true });
+});
 
 const ORIGIN = 'http://127.0.0.1:3000';
 

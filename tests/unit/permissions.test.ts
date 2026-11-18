@@ -5,6 +5,7 @@ import {
   type PageTarget,
   type WikiAction,
   can,
+  canWritePage,
   getUserPermissions,
 } from '@/server/services/permissions';
 import { createUser } from '@/server/services/users';
@@ -102,5 +103,29 @@ describe('회원 권한 읽기 (T033)', () => {
       .run();
     expect(getUserPermissions(db, kim.id).sort()).toEqual(['edit', 'upload']);
     expect(getUserPermissions(db, owner.id)).toEqual([]);
+  });
+});
+
+describe('문서 저장 권한 canWritePage (T035)', () => {
+  const target = { namespace: 'main' as const, title: 'React' };
+
+  it('있는 문서는 edit, 없는 문서는 create 권한으로 판단한다', () => {
+    const editor = actor({ permissions: ['edit'] });
+    const creator = actor({ permissions: ['create'] });
+    const existing = { protection: 'none' as const, hasRevision: true };
+    expect(canWritePage(editor, target, existing)).toBe(true);
+    expect(canWritePage(creator, target, existing)).toBe(false);
+    expect(canWritePage(editor, target, null)).toBe(false);
+    expect(canWritePage(creator, target, null)).toBe(true);
+  });
+
+  it('보호된 문서는 관리자만', () => {
+    const existing = { protection: 'admin' as const, hasRevision: true };
+    expect(canWritePage(actor({ permissions: ALL }), target, existing)).toBe(false);
+    expect(canWritePage(admin, target, existing)).toBe(true);
+  });
+
+  it('로그인하지 않았으면 거부', () => {
+    expect(canWritePage(null, target, null)).toBe(false);
   });
 });
