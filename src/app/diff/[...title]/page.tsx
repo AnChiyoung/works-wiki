@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { DiffView } from '@/components/DiffView';
 import { formatDateTime } from '@/lib/format';
+import { parseRevNo } from '@/lib/rev';
 import { getDb } from '@/server/db';
 import { computeDiff } from '@/server/services/diff';
 import { type RevisionInfo, getPage } from '@/server/services/pages';
@@ -15,13 +16,6 @@ type Props = {
   params: Promise<{ title: string[] }>;
   searchParams: Promise<{ from?: string | string[]; to?: string | string[] }>;
 };
-
-/** 판 번호. 없으면 undefined, 숫자가 아니면 'invalid' */
-function parseRevNo(raw: string | string[] | undefined): number | undefined | 'invalid' {
-  if (raw === undefined) return undefined;
-  const value = Array.isArray(raw) ? raw[0] : raw;
-  return value && /^[1-9]\d{0,8}$/.test(value) ? Number(value) : 'invalid';
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   // generateMetadata의 params는 이미 디코딩되어 있다 (w/[...title]/page.tsx 주석 참고)

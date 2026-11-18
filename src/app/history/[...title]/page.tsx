@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { SizeDelta } from '@/components/SizeDelta';
 import { formatDateTime } from '@/lib/format';
+import { parseRevNo } from '@/lib/rev';
 import { getDb } from '@/server/db';
 import type { RevisionSummary } from '@/server/services/history';
 import { listRevisions } from '@/server/services/history';
@@ -34,7 +35,9 @@ const KIND_LABELS: Partial<Record<RevisionSummary['kind'], string>> = {
 export default async function HistoryPage({ params, searchParams }: Props) {
   const { title } = await params;
   const { before: rawBefore } = await searchParams;
-  const before = rawBefore && /^[1-9]\d{0,8}$/.test(rawBefore) ? Number(rawBefore) : undefined;
+  // 잘못된 before 값은 무시하고 최신 판부터 보여준다
+  const parsedBefore = parseRevNo(rawBefore);
+  const before = parsedBefore === 'invalid' ? undefined : parsedBefore;
 
   let list;
   try {
