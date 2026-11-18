@@ -18,8 +18,8 @@ export default defineConfig({
     { name: 'mobile', use: { ...devices['Pixel 7'] } },
   ],
   webServer: {
-    // 매번 빈 테스트 데이터로 시작한다
-    command: `node -e "require('fs').rmSync('data-test',{recursive:true,force:true})" && npx next dev --hostname 127.0.0.1 --port ${PORT}`,
+    // 매번 빈 테스트 데이터로 시작하고, 테스트 관리자를 만든 뒤 서버를 띄운다
+    command: `node -e "require('fs').rmSync('data-test',{recursive:true,force:true})" && npx tsx --conditions=react-server scripts/e2e-seed.mts && npx next dev --hostname 127.0.0.1 --port ${PORT}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

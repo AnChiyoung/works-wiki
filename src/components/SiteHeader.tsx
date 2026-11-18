@@ -1,9 +1,10 @@
 import Link from 'next/link';
 import { MAIN_PAGE_TITLE } from '@/lib/wiki';
 import { titleToPath } from '@/server/services/title';
+import { AccountMenu } from './AccountMenu';
 import styles from './SiteHeader.module.css';
 
-export function SiteHeader({ wikiName }: { wikiName: string }) {
+export function SiteHeader({ wikiName, username }: { wikiName: string; username: string | null }) {
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
@@ -21,6 +22,7 @@ export function SiteHeader({ wikiName }: { wikiName: string }) {
             className={styles.searchInput}
           />
         </form>
+        <AccountMenu username={username} />
       </div>
     </header>
   );

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { SiteHeader } from '@/components/SiteHeader';
 import { getConfig } from '@/server/config';
+import { getCurrentUser } from '@/server/current-user';
 import '@/styles/globals.css';
 import '@/styles/wiki-content.css';
 import styles from './layout.module.css';
@@ -21,11 +22,12 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentUser();
   return (
     <html lang="ko">
       <body>
-        <SiteHeader wikiName={getConfig().wikiName} />
+        <SiteHeader wikiName={getConfig().wikiName} username={user?.username ?? null} />
         <main className={styles.main}>{children}</main>
       </body>
     </html>
