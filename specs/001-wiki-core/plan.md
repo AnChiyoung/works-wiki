@@ -262,7 +262,7 @@ POST로 적은 동작은 대부분 해당 페이지의 서버 액션으로 구�
 
 ### M1에서 확인된 구현 메모
 - **Next.js 실험 기능**: 권한 없음 화면(`forbidden()`, 403)에 `experimental.authInterrupts`를 켠다. 로그인 필요 화면(`unauthorized()`, 401)도 같은 기능을 쓴다.
-- **주소 조각 디코딩**: Next.js 16.4는 `[...title]` 값을 페이지에는 인코딩된 채로(`C%2B%2B`), `generateMetadata`에는 디코딩된 채로(`C++`) 넘긴다. 페이지는 `titleFromPathSegments`로 디코딩하고 메타데이터는 그대로 쓴다. `100%`·`C#`·`URL %20 인코딩` 제목의 화면 테스트가 이 동작이 바뀌면 잡아낸다.
+- **주소 조각 디코딩**: Next.js 16.4는 `[...title]` 값을 페이지에는 인코딩된 채로(`C%2B%2B`), `generateMetadata`에는 디코딩된 채로(`C++`) 넘긴다. 페이지는 `titleFromPathSegments`로 디코딩하고 메타데이터는 그대로 쓴다. 라우트 핸들러(`/raw` 등)도 디코딩된 채로 받으므로 그대로 쓴다(T040에서 확인). `100%`·`C#`·`URL %20 인코딩` 제목의 화면 테스트가 이 동작이 바뀌면 잡아낸다.
 - **스크립트 실행**: `scripts/*.mts`는 `tsx --conditions=react-server`로 실행해 `server-only` 모듈을 불러올 수 있게 한다.
 
 ## 9. 단계별 구현 순서 (마일스톤)
