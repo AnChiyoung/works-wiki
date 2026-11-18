@@ -112,6 +112,8 @@ export type SavePageInput = {
   authorId: number;
   /** 편집을 시작할 때의 최신 판 id. 편집 충돌 검사(M3, AC-2.5)에서 쓴다 */
   baseRevId?: number | null;
+  /** 판의 종류. 생략하면 새 문서는 create, 있는 문서는 edit. 되돌리기(revert.ts)가 'revert'를 넘긴다 */
+  kind?: 'revert';
 };
 
 export type SavePageResult = {
@@ -181,7 +183,7 @@ export function savePage(db: DbOrTx, input: SavePageInput): SavePageResult {
         summary,
         size,
         sizeDelta: size - (latest?.size ?? 0),
-        kind: existing ? 'edit' : 'create',
+        kind: input.kind ?? (existing ? 'edit' : 'create'),
       })
       .returning({ id: revisions.id })
       .get();
