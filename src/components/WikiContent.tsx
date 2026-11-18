@@ -47,6 +47,14 @@ function revealTarget(root: HTMLElement, id: string): void {
   target.scrollIntoView();
 }
 
+/** 번호를 뺀 제목 글자가 같은 첫 제목의 id */
+function findHeadingIdByText(root: HTMLElement, text: string): string | undefined {
+  const wanted = text.trim();
+  return Array.from(root.querySelectorAll<HTMLElement>('.wiki-heading')).find(
+    (h) => h.querySelector('.heading-text')?.textContent?.trim() === wanted,
+  )?.id;
+}
+
 export function WikiContent({ html }: { html: string }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -80,8 +88,16 @@ export function WikiContent({ html }: { html: string }) {
       }
     };
     const onHashChange = () => {
-      const id = decodeURIComponent(window.location.hash.slice(1));
-      if (id) revealTarget(root, id);
+      let id: string;
+      try {
+        id = decodeURIComponent(window.location.hash.slice(1));
+      } catch {
+        return; // 잘못 인코딩된 주소(#%)는 무시한다
+      }
+      if (!id) return;
+      // [[문서#역사]] 링크는 #역사로 들어온다. 고정 주소(#s-1.2)가 아니면 글자가 같은 제목을 찾는다 (SX-24)
+      const targetId = document.getElementById(id) ? id : findHeadingIdByText(root, id);
+      if (targetId) revealTarget(root, targetId);
     };
 
     root.addEventListener('click', onClick);

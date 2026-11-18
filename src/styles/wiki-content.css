@@ -140,6 +140,10 @@ a.heading-number:hover {
   font-size: 0.8em;
   text-decoration: none;
 }
+/* 없는 문서로 가는 위키 링크 (SX-25) */
+.wiki-content a.wiki-link.new {
+  color: var(--removed-fg);
+}
 
 /* ── 코드 (SX-4, SX-6. 문법 강조는 M4) ── */
 .wiki-content code {

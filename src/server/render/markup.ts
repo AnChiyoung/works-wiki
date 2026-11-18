@@ -1,5 +1,6 @@
 import MarkdownIt, { type MarkdownIt as MarkdownItInstance } from 'markdown-it';
 import { headingsPlugin } from './plugins/headings';
+import { type WikiEnv, wikiLinkPlugin } from './plugins/wikilink';
 import { sanitize } from './sanitize';
 
 // 위키 원문 → 안전한 HTML. 규칙: specs/001-wiki-core/syntax.md
@@ -19,7 +20,18 @@ export type TocItem = {
 export type RenderResult = {
   html: string;
   toc: TocItem[];
+  /** 위키 링크 대상 전체 제목 (정규화, 중복 없이 나온 순서대로). 없는 문서도 들어 있다 */
+  links: string[];
+  /** 분류 이름 (접두어 없이) */
+  categories: string[];
 };
+
+export type RenderOptions = {
+  /** 있는 문서의 전체 제목. 여기에 없는 문서로 가는 링크는 빨간 링크가 된다. 생략하면 모두 있는 문서로 본다 */
+  existingTitles?: ReadonlySet<string>;
+};
+
+export type WikiData = Pick<RenderResult, 'links' | 'categories'>;
 
 function isExternal(href: string): boolean {
   return /^https?:\/\//i.test(href);
@@ -59,6 +71,7 @@ function createMarkdown(): MarkdownItInstance {
     return defaultImage(tokens, idx, options, env, self);
   };
 
+  md.use(wikiLinkPlugin); // SX-22~27
   md.use(headingsPlugin); // SX-10~17
 
   return md;
@@ -67,8 +80,23 @@ function createMarkdown(): MarkdownItInstance {
 const md = createMarkdown();
 
 /** 위키 원문을 렌더링한다. 결과 HTML은 정화(sanitize)를 거친 상태다. */
-export function renderMarkup(source: string): RenderResult {
-  const env: { toc: TocItem[] } = { toc: [] };
+export function renderMarkup(source: string, options: RenderOptions = {}): RenderResult {
+  const env: WikiEnv & { toc: TocItem[] } = {
+    toc: [],
+    links: [],
+    categories: [],
+    existingTitles: options.existingTitles,
+  };
   const raw = md.render(source, env);
-  return { html: sanitize(raw), toc: env.toc };
+  return { html: sanitize(raw), toc: env.toc, links: env.links, categories: env.categories };
+}
+
+/**
+ * HTML을 만들지 않고 링크 대상과 분류만 뽑는다.
+ * 저장할 때 색인을 갱신하거나, 렌더링 전에 있는 문서를 조회할 때 쓴다.
+ */
+export function extractWikiData(source: string): WikiData {
+  const env: WikiEnv & { toc: TocItem[] } = { toc: [], links: [], categories: [] };
+  md.parse(source, env);
+  return { links: env.links, categories: env.categories };
 }
