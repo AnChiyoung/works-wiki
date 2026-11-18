@@ -59,3 +59,43 @@
   border-radius: 6px;
   background: var(--surface);
 }
+
+.revertForm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: -8px 0 20px;
+}
+
+.revertSummary {
+  flex: 1 1 200px;
+  max-width: 360px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  font: inherit;
+}
+
+.revertButton {
+  padding: 6px 14px;
+  border: 1px solid #bf8700;
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  cursor: pointer;
+}
+
+.revertButton:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.revertError {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--removed-fg);
+}

@@ -3,11 +3,13 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { WikiContent } from '@/components/WikiContent';
 import { formatDateTime, htmlToDescription } from '@/lib/format';
+import { parseRevNo } from '@/lib/rev';
 import { canWriteTitle } from '@/server/access';
 import { getDb } from '@/server/db';
 import { renderMarkup } from '@/server/render/markup';
 import { getPage } from '@/server/services/pages';
 import { TitleError, titleFromPathSegments, titleToPath } from '@/server/services/title';
+import { RevertForm } from './RevertForm';
 import styles from './page.module.css';
 
 export const dynamic = 'force-dynamic';
@@ -16,13 +18,6 @@ type Props = {
   params: Promise<{ title: string[] }>;
   searchParams: Promise<{ notice?: string; rev?: string | string[] }>;
 };
-
-/** `?rev=3` → 3. 없으면 undefined, 숫자가 아니면 'invalid' (→ 404) */
-function parseRev(raw: string | string[] | undefined): number | undefined | 'invalid' {
-  if (raw === undefined) return undefined;
-  const value = Array.isArray(raw) ? raw[0] : raw;
-  return value && /^[1-9]d{0,8}$/.test(value) ? Number(value) : 'invalid';
-}
 
 // 주의: Next.js 16.4에서 catch-all params는 페이지에는 인코딩된 채로(C%2B%2B),
 // generateMetadata에는 디코딩된 채로(C++) 들어온다. 그래서 받는 쪽마다 처리를 다르게 한다.
@@ -38,7 +33,7 @@ function loadPage(fullTitle: () => string, rev?: number) {
 
 export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { title } = await params;
-  const rev = parseRev((await searchParams).rev);
+  const rev = parseRevNo((await searchParams).rev);
   if (rev === 'invalid') return {};
   const result = loadPage(() => title.join('/'), rev);
   if (!result?.revision) return {};
@@ -52,7 +47,7 @@ export async function generateMetadata({ params, searchParams }: Props): Promise
 export default async function WikiPage({ params, searchParams }: Props) {
   const { title } = await params;
   const { notice, rev: rawRev } = await searchParams;
-  const rev = parseRev(rawRev);
+  const rev = parseRevNo(rawRev);
   if (rev === 'invalid') notFound();
   const result = loadPage(() => titleFromPathSegments(title), rev);
   if (!result?.revision) notFound(); // → not-found.tsx (T020). 없는 판도 404 (T039)
@@ -60,9 +55,12 @@ export default async function WikiPage({ params, searchParams }: Props) {
   const { page, revision } = result;
   const { html } = renderMarkup(revision.content);
   // 과거 판을 보는 중인지 (최신 판 번호를 ?rev=로 연 경우는 최신 판과 같게 보여준다)
-  const latestRevNo = rev === undefined ? revision.revNo : loadPage(() => page.fullTitle)?.revision?.revNo;
-  const isOld = revision.revNo !== latestRevNo;
-  const canEdit = !isOld && (await canWriteTitle(page.fullTitle));
+  const latest = rev === undefined ? revision : (loadPage(() => page.fullTitle)?.revision ?? revision);
+  const isOld = revision.revNo !== latest.revNo;
+  const canWrite = await canWriteTitle(page.fullTitle);
+  const canEdit = !isOld && canWrite;
+  // 되돌리기 뒤 알림: ?notice=reverted-3
+  const revertedFrom = /^reverted-(\d+)$/.exec(notice ?? '')?.[1];
 
   return (
     <article>
@@ -84,6 +82,16 @@ export default async function WikiPage({ params, searchParams }: Props) {
         <p className={styles.oldRevision} role="note">
           <strong>{revision.revNo}판</strong> ({formatDateTime(revision.createdAt)}, {revision.authorName})
           입니다. 최신 판이 아닙니다. <Link href={titleToPath(page.fullTitle)}>최신 판 보기</Link>
+        </p>
+      )}
+
+      {isOld && canWrite && (
+        <RevertForm fullTitle={page.fullTitle} revNo={revision.revNo} baseRevId={latest.id} />
+      )}
+
+      {revertedFrom && (
+        <p className={styles.notice} role="status">
+          {revertedFrom}판의 내용으로 되돌렸습니다.
         </p>
       )}
 

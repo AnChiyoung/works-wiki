@@ -163,3 +163,46 @@ test.describe('차이 화면 (T043, AC-4.2)', () => {
     }
   });
 });
+
+test.describe('되돌리기 (T045, AC-4.4)', () => {
+  test('과거 판에서 되돌리면 확인 창 뒤 문서로 돌아오고, 이력에 되돌림 판이 생긴다', async ({
+    page,
+  }, info) => {
+    const title = await pageWithThreeRevisions(page, '되돌리기', info.project.name);
+    await page.goto(`${wikiPath(title)}?rev=1`);
+    await page.getByLabel('되돌리는 이유').fill('실수 취소');
+
+    page.once('dialog', (dialog) => dialog.accept());
+    await page.getByRole('button', { name: '이 판으로 되돌리기' }).click();
+
+    await expect(page).toHaveURL(`${wikiPath(title)}?notice=reverted-1`);
+    await expect(page.getByRole('status')).toHaveText('1판의 내용으로 되돌렸습니다.');
+    await expect(page.locator('.wiki-content')).toHaveText('첫 번째 판 내용');
+
+    await page.getByRole('link', { name: '이력', exact: true }).click();
+    const newest = page.locator('tbody tr').first();
+    await expect(newest).toContainText('4판');
+    await expect(newest).toContainText('되돌림');
+    await expect(newest).toContainText('1판으로 되돌림: 실수 취소');
+  });
+
+  test('확인 창에서 취소하면 아무 일도 없다', async ({ page }, info) => {
+    const title = await pageWithThreeRevisions(page, '되돌리기 취소', info.project.name);
+    await page.goto(`${wikiPath(title)}?rev=1`);
+    page.once('dialog', (dialog) => dialog.dismiss());
+    await page.getByRole('button', { name: '이 판으로 되돌리기' }).click();
+    await expect(page).toHaveURL(`${wikiPath(title)}?rev=1`);
+    await page.goto(wikiPath(title, '/history'));
+    await expect(page.locator('tbody tr')).toHaveCount(3);
+  });
+
+  test('방문자에게는 되돌리기 버튼이 없다', async ({ page, browser }, info) => {
+    const title = await pageWithThreeRevisions(page, '되돌리기 방문자', info.project.name);
+    const visitor = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+    const visitorPage = await visitor.newPage();
+    await visitorPage.goto(`${wikiPath(title)}?rev=1`);
+    await expect(visitorPage.getByRole('note')).toBeVisible();
+    await expect(visitorPage.getByRole('button', { name: '이 판으로 되돌리기' })).toHaveCount(0);
+    await visitor.close();
+  });
+});

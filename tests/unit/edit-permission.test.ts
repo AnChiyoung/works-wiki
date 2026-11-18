@@ -20,6 +20,7 @@ const { createUser } = await import('@/server/services/users');
 const { SESSION_COOKIE } = await import('@/server/current-user');
 const { savePageAction } = await import('@/app/edit/[...title]/actions');
 const { POST: previewPOST } = await import('@/app/api/preview/route');
+const { revertAction } = await import('@/app/w/[...title]/actions');
 
 const db = getDb();
 initDatabase(db);
@@ -130,5 +131,53 @@ describe('미리보기 권한 (T035)', () => {
     grant('edit');
     await loginAs('kim');
     expect((await preview()).status).toBe(200);
+  });
+});
+
+describe('되돌리기 권한 (T045, AC-4.4)', () => {
+  async function revert(title: string, toRevNo: number): Promise<{ error?: string; redirectedTo?: string }> {
+    const form = new FormData();
+    form.set('title', title);
+    form.set('toRevNo', String(toRevNo));
+    try {
+      return await revertAction({}, form);
+    } catch (error) {
+      const digest = (error as { digest?: string }).digest ?? '';
+      if (!digest.startsWith('NEXT_REDIRECT')) throw error;
+      return { redirectedTo: digest.split(';')[2] };
+    }
+  }
+
+  async function twoRevisions(title: string) {
+    await loginAs('owner');
+    await save(title, '첫 판');
+    await save(title, '둘째 판');
+    jar.clear();
+  }
+
+  it('로그인하지 않았거나 edit 권한이 없으면 거부하고 판을 만들지 않는다', async () => {
+    await twoRevisions('되돌릴 문서 1');
+    expect(await revert('되돌릴 문서 1', 1)).toEqual({ error: '되돌릴 권한이 없습니다.' });
+    grant('create');
+    await loginAs('kim');
+    expect(await revert('되돌릴 문서 1', 1)).toEqual({ error: '되돌릴 권한이 없습니다.' });
+    expect(getPage(db, '되돌릴 문서 1')?.revision?.content).toBe('둘째 판');
+  });
+
+  it('관리자와 edit 권한 회원은 되돌릴 수 있고, 알림 주소로 이동한다', async () => {
+    await twoRevisions('되돌릴 문서 2');
+    grant('edit');
+    await loginAs('kim');
+    expect((await revert('되돌릴 문서 2', 1)).redirectedTo).toBe(
+      `/w/${encodeURIComponent('되돌릴 문서 2')}?notice=reverted-1`,
+    );
+    const latest = getPage(db, '되돌릴 문서 2')?.revision;
+    expect(latest).toMatchObject({ content: '첫 판', kind: 'revert', authorName: 'kim' });
+  });
+
+  it('없는 판이면 이유를 알려준다', async () => {
+    await twoRevisions('되돌릴 문서 3');
+    await loginAs('owner');
+    expect(await revert('되돌릴 문서 3', 9)).toEqual({ error: '되돌릴 문서나 판이 없습니다.' });
   });
 });
