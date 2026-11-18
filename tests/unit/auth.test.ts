@@ -57,13 +57,19 @@ describe('로그인 (T031, AC-8.2)', () => {
     expect(await login(db, { username: 'system', password: '!' })).toEqual({ ok: false });
   });
 
-  it('대기·차단 회원은 비밀번호가 맞아도 로그인할 수 없다', async () => {
+  it('차단 회원은 비밀번호가 맞아도 로그인할 수 없다', async () => {
     const { db } = await setup();
     const { id } = await createUser(db, { username: 'member1', password: PASSWORD, role: 'member' });
-    for (const status of ['pending', 'blocked'] as const) {
-      db.update(users).set({ status }).where(eq(users.id, id)).run();
-      expect(await login(db, { username: 'member1', password: PASSWORD })).toEqual({ ok: false });
-    }
+    db.update(users).set({ status: 'blocked' }).where(eq(users.id, id)).run();
+    expect(await login(db, { username: 'member1', password: PASSWORD })).toEqual({ ok: false });
+  });
+
+  it('대기 회원은 로그인은 된다 (권한은 can()이 막는다, spec.md §2)', async () => {
+    const { db } = await setup();
+    const { id } = await createUser(db, { username: 'member1', password: PASSWORD, role: 'member' });
+    db.update(users).set({ status: 'pending' }).where(eq(users.id, id)).run();
+    const result = await login(db, { username: 'member1', password: PASSWORD });
+    expect(result.ok && result.user.status).toBe('pending');
   });
 
   it('로그인할 때 만료된 세션을 정리한다', async () => {

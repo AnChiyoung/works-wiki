@@ -21,8 +21,9 @@ export function hashSessionToken(token: string): string {
   return createHash('sha256').update(token).digest('hex');
 }
 
+/** 대기 회원은 로그인만 되고 권한은 없다(spec.md §2). 차단 회원과 system은 로그인할 수 없다. */
 function canLogIn(user: Pick<User, 'role' | 'status'>): boolean {
-  return user.role !== 'system' && user.status === 'active';
+  return user.role !== 'system' && user.status !== 'blocked';
 }
 
 const sessionUserColumns = {
@@ -34,7 +35,7 @@ const sessionUserColumns = {
 
 /**
  * 아이디·비밀번호를 확인하고 새 세션을 만든다.
- * 실패 이유(없는 아이디, 틀린 비밀번호, 대기·차단 회원)는 구분하지 않고 돌려준다(AC-8.2).
+ * 실패 이유(없는 아이디, 틀린 비밀번호, 차단 회원)는 구분하지 않고 돌려준다(AC-8.2).
  */
 export async function login(
   db: DbOrTx,
