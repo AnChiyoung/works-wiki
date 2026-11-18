@@ -215,6 +215,37 @@ a.heading-number:hover {
   font-size: 2em;
 }
 
+/* ── 접기 상자 (SX-40~43) ── */
+.wiki-content .wiki-fold {
+  margin: 1em 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+}
+.wiki-content .wiki-fold > summary {
+  padding: 0.5em 0.75em;
+  background: var(--surface);
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.wiki-content .wiki-fold[open] > summary {
+  border-bottom: 1px solid var(--border);
+  border-radius: 6px 6px 0 0;
+}
+.wiki-content .wiki-fold > summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.wiki-content .wiki-fold-body {
+  padding: 0 0.75em;
+  min-width: 0;
+}
+.wiki-content .wiki-fold-body:empty {
+  display: none;
+}
+
 /* ── 코드 (SX-4, SX-6. 문법 강조는 M4) ── */
 .wiki-content code {
   font-family: 'D2Coding', 'JetBrains Mono', Consolas, 'Courier New', monospace;

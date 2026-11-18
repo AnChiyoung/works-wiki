@@ -35,6 +35,10 @@ const OPTIONS: sanitizeHtml.IOptions = {
     // 각주 (SX-31)
     'sup',
     'section',
+    // 접기 상자 (SX-40~43)
+    'details',
+    'summary',
+    'div',
   ],
   allowedAttributes: {
     ...Object.fromEntries(HEADINGS.map((h) => [h, ['id', 'class', 'data-level']])),
@@ -53,6 +57,8 @@ const OPTIONS: sanitizeHtml.IOptions = {
     sup: ['class'],
     section: ['class', 'aria-label'],
     p: ['class'],
+    details: ['class', 'open'],
+    div: ['class'],
   },
   allowedClasses: {
     ...Object.fromEntries(HEADINGS.map((h) => [h, ['wiki-heading']])),
@@ -65,6 +71,8 @@ const OPTIONS: sanitizeHtml.IOptions = {
     ol: ['footnotes-list'],
     sup: ['footnote-ref'],
     section: ['footnotes'],
+    details: ['wiki-fold'],
+    div: ['wiki-fold-body'],
   },
   allowedStyles: {
     th: { 'text-align': [/^(left|right|center)$/] },

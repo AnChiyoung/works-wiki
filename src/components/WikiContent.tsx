@@ -33,6 +33,11 @@ function setCollapsed(heading: Element, collapsed: boolean): void {
 function revealTarget(root: HTMLElement, id: string): void {
   const target = document.getElementById(id);
   if (!target || !root.contains(target)) return;
+  // 대상을 감싼 접기 상자(SX-40)도 펼친다
+  for (let el = target.parentElement?.closest('details'); el && root.contains(el);) {
+    el.open = true;
+    el = el.parentElement?.closest('details');
+  }
   const top = Array.from(root.children).find((c) => c === target || c.contains(target));
   if (!top) return;
 

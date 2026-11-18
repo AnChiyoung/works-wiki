@@ -17,7 +17,7 @@
 | DB | SQLite (better-sqlite3) | 별도 DB 서버 불필요, 파일 하나로 백업 ([원칙 4](../constitution.md)) |
 | DB 접근 | Drizzle ORM + 마이그레이션 | 타입 안전한 쿼리, 스키마 변경 이력 관리 |
 | 검색 | SQLite FTS5 (trigram 토크나이저) | 한국어 부분 검색 지원, 추가 서버 불필요 |
-| 마크업 | markdown-it (`html: false`) + 각주(markdown-it-footnote) + 접기(markdown-it-container) + 직접 만드는 플러그인(위키 링크, 색·크기, 제목 번호) | 확장이 쉬움. 규칙은 [syntax.md](syntax.md) |
+| 마크업 | markdown-it (`html: false`) + 각주(markdown-it-footnote) + 직접 만드는 플러그인(위키 링크, 색·크기, 접기, 제목 번호) | 확장이 쉬움. 규칙은 [syntax.md](syntax.md) |
 | HTML 정화 | sanitize-html | XSS 방지 ([원칙 5](../constitution.md)) |
 | 차이 비교 | jsdiff | 판 비교 화면 |
 | 비밀번호 | @node-rs/argon2 (argon2id) | 현재 권장되는 해시 방식. 미리 빌드된 파일로 설치되어 설치 스크립트가 필요 없음 |
