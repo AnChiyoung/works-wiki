@@ -1,0 +1,18 @@
+.plus,
+.minus,
+.zero {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.plus {
+  color: var(--added-fg);
+}
+
+.minus {
+  color: var(--removed-fg);
+}
+
+.zero {
+  color: var(--muted);
+}

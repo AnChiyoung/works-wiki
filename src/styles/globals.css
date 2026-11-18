@@ -8,6 +8,13 @@
   --code-bg: #eff2f5;
   --link: #0969da;
   --accent: #0969da;
+  /* 차이·바이트 증감 표시 (색만으로 구분하지 않도록 +/- 기호도 함께 쓴다) */
+  --added-fg: #1a7f37;
+  --added-bg: #dafbe1;
+  --added-strong: #aceebb;
+  --removed-fg: #cf222e;
+  --removed-bg: #ffebe9;
+  --removed-strong: #ffcecb;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -20,6 +27,12 @@
     --code-bg: #1c232c;
     --link: #4493f8;
     --accent: #4493f8;
+    --added-fg: #3fb950;
+    --added-bg: #12261e;
+    --added-strong: #1f4a2c;
+    --removed-fg: #f85149;
+    --removed-bg: #25171c;
+    --removed-strong: #5c1f24;
   }
 }
 

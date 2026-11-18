@@ -68,13 +68,16 @@ export default async function WikiPage({ params, searchParams }: Props) {
     <article>
       <header className={styles.header}>
         <h1 className={styles.title}>{page.fullTitle}</h1>
-        {canEdit && (
-          <nav className={styles.actions} aria-label="문서 동작">
+        <nav className={styles.actions} aria-label="문서 동작">
+          {canEdit && (
             <Link href={titleToPath(page.fullTitle, '/edit')} className={styles.action}>
               편집
             </Link>
-          </nav>
-        )}
+          )}
+          <Link href={titleToPath(page.fullTitle, '/history')} className={styles.action}>
+            이력
+          </Link>
+        </nav>
       </header>
 
       {isOld && (
