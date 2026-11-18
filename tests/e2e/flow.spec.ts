@@ -1,14 +1,6 @@
 import { type Page, expect, test } from '@playwright/test';
 import { E2E_ADMIN } from './accounts';
-import { uniqueTitle, wikiPath } from './helpers';
-
-/** 가로 스크롤이 생기지 않았는지 (T017: 360px 이상에서 가로 스크롤 없음) */
-async function expectNoHorizontalScroll(page: Page): Promise<void> {
-  const overflow = await page.evaluate(
-    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-  );
-  expect(overflow).toBeLessThanOrEqual(0);
-}
+import { expectNoHorizontalScroll, uniqueTitle, wikiPath } from './helpers';
 
 /** 문서 본문에서 글자가 들어 있는 목록 항목의 기호 모양 */
 async function listStyleOf(page: Page, text: string): Promise<string> {

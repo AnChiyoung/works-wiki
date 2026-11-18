@@ -21,3 +21,11 @@ export async function createPage(page: Page, title: string, content: string, sum
   await page.getByRole('button', { name: '저장' }).click();
   await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible();
 }
+
+/** 가로 스크롤이 생기지 않았는지 (T017: 360px 이상에서 가로 스크롤 없음) */
+export async function expectNoHorizontalScroll(page: Page): Promise<void> {
+  const overflow = await page.evaluate(
+    () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+}
