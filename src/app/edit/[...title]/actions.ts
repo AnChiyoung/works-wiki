@@ -4,10 +4,23 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { canWriteTitle, getActor } from '@/server/access';
 import { getDb } from '@/server/db';
-import { ContentError, MAX_SUMMARY_LENGTH, savePage } from '@/server/services/pages';
+import { type DiffRow, computeDiff } from '@/server/services/diff';
+import { ConflictError, ContentError, MAX_SUMMARY_LENGTH, savePage } from '@/server/services/pages';
 import { TitleError, titleToPath } from '@/server/services/title';
 
-export type SaveState = { error?: string };
+/** 편집 충돌 정보 (AC-2.5). 차이는 최신 판(이전) → 내 내용(이후) */
+export type SaveConflict = {
+  latestRevId: number;
+  revNo: number;
+  authorName: string;
+  /** ISO 시각 */
+  createdAt: string;
+  rows: DiffRow[];
+  added: number;
+  removed: number;
+};
+
+export type SaveState = { error?: string; conflict?: SaveConflict };
 
 const formSchema = z.object({
   title: z.string().min(1),
@@ -39,6 +52,22 @@ export async function savePageAction(_prev: SaveState, formData: FormData): Prom
     result = savePage(getDb(), { fullTitle: title, content, summary, baseRevId, authorId: actor.id });
   } catch (error) {
     if (error instanceof TitleError || error instanceof ContentError) return { error: error.message };
+    if (error instanceof ConflictError) {
+      const { latest } = error;
+      const { rows, added, removed } = computeDiff(latest.content, content);
+      return {
+        error: error.message,
+        conflict: {
+          latestRevId: latest.id,
+          revNo: latest.revNo,
+          authorName: latest.authorName,
+          createdAt: latest.createdAt.toISOString(),
+          rows,
+          added,
+          removed,
+        },
+      };
+    }
     throw error;
   }
 

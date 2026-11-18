@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { z } from 'zod';
 import { canWriteTitle, getActor } from '@/server/access';
 import { getDb } from '@/server/db';
-import { MAX_SUMMARY_LENGTH } from '@/server/services/pages';
+import { ConflictError, MAX_SUMMARY_LENGTH } from '@/server/services/pages';
 import { RevertError, revertPage } from '@/server/services/revert';
 import { TitleError, titleToPath } from '@/server/services/title';
 
@@ -39,6 +39,9 @@ export async function revertAction(_prev: RevertState, formData: FormData): Prom
     result = revertPage(getDb(), { fullTitle: title, toRevNo, summary, baseRevId, authorId: actor.id });
   } catch (error) {
     if (error instanceof RevertError || error instanceof TitleError) return { error: error.message };
+    if (error instanceof ConflictError) {
+      return { error: `${error.message} 화면을 새로 고쳐 최신 판을 확인한 뒤 다시 시도해 주세요.` };
+    }
     throw error;
   }
 

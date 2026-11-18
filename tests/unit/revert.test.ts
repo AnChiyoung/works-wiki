@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { listRevisions } from '@/server/services/history';
-import { getPage, savePage } from '@/server/services/pages';
+import { ConflictError, getPage, savePage } from '@/server/services/pages';
 import { RevertError, revertPage } from '@/server/services/revert';
 import { createTestDb } from '../helpers/db';
 
@@ -64,5 +64,25 @@ describe('되돌리기 서비스 (T044, AC-4.4)', () => {
       RevertError,
     );
     expect(listRevisions(db, '문서')!.items).toHaveLength(3);
+  });
+});
+
+describe('되돌리기 충돌 (T046)', () => {
+  it('되돌리기 화면을 연 뒤 다른 사람이 저장했으면 되돌리지 않고 ConflictError', () => {
+    const { db, systemUserId } = threeRevisions();
+    const staleId = getPage(db, '문서')!.revision!.id;
+    savePage(db, { fullTitle: '문서', content: '넷째 판', authorId: systemUserId });
+    expect(() =>
+      revertPage(db, { fullTitle: '문서', toRevNo: 1, authorId: systemUserId, baseRevId: staleId }),
+    ).toThrow(ConflictError);
+    expect(getPage(db, '문서')!.revision!.content).toBe('넷째 판');
+  });
+
+  it('최신 판 id가 맞으면 되돌린다', () => {
+    const { db, systemUserId } = threeRevisions();
+    const baseRevId = getPage(db, '문서')!.revision!.id;
+    expect(revertPage(db, { fullTitle: '문서', toRevNo: 1, authorId: systemUserId, baseRevId }).changed).toBe(
+      true,
+    );
   });
 });

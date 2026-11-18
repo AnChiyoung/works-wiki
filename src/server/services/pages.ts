@@ -22,6 +22,17 @@ export class ContentError extends Error {
   }
 }
 
+/**
+ * 편집 충돌 (AC-2.5, T046). 편집을 시작한 뒤 다른 사람이 먼저 저장했다는 뜻이다.
+ * `latest`에 지금의 최신 판이 들어 있어서, 화면에서 내 내용과의 차이를 보여주고 그 판 기준으로 다시 저장할 수 있다.
+ */
+export class ConflictError extends Error {
+  constructor(public readonly latest: RevisionInfo) {
+    super(`다른 사람이 먼저 저장했습니다. (최신 판: ${latest.revNo}판, ${latest.authorName})`);
+    this.name = 'ConflictError';
+  }
+}
+
 export type PageInfo = {
   id: number;
   namespace: Namespace;
@@ -110,7 +121,10 @@ export type SavePageInput = {
   content: string;
   summary?: string;
   authorId: number;
-  /** 편집을 시작할 때의 최신 판 id. 편집 충돌 검사(M3, AC-2.5)에서 쓴다 */
+  /**
+   * 편집을 시작할 때의 최신 판 id (새 문서면 null). 지금의 최신 판과 다르면 ConflictError (AC-2.5).
+   * 생략(undefined)하면 검사하지 않는다. 기본 데이터·스크립트처럼 화면을 거치지 않는 저장용이다.
+   */
   baseRevId?: number | null;
   /** 판의 종류. 생략하면 새 문서는 create, 있는 문서는 edit. 되돌리기(revert.ts)가 'revert'를 넘긴다 */
   kind?: 'revert';
@@ -160,6 +174,13 @@ export function savePage(db: DbOrTx, input: SavePageInput): SavePageResult {
         changed: false,
         revNo: latest.revNo,
       };
+    }
+
+    // 같은 트랜잭션 안에서 확인하므로, 확인과 저장 사이에 다른 저장이 끼어들 수 없다.
+    // 새 문서를 만들려 했는데(null) 그 사이에 누가 만든 경우도 여기서 걸린다.
+    if (input.baseRevId !== undefined && input.baseRevId !== (existing?.latestRevId ?? null)) {
+      const current = getPage(tx, input.fullTitle)?.revision;
+      if (current) throw new ConflictError(current);
     }
 
     const pageId =

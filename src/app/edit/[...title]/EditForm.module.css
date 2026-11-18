@@ -106,3 +106,41 @@
 .muted {
   color: var(--muted);
 }
+
+/* 편집 충돌 안내 (T046) */
+.conflict {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid #bf8700;
+  border-radius: 6px;
+  background: color-mix(in srgb, #bf8700 8%, transparent);
+}
+
+.conflict p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.conflictTitle {
+  font-weight: 700;
+}
+
+.conflictCounts {
+  font-variant-numeric: tabular-nums;
+}
+
+.conflictDiff {
+  max-height: 40vh;
+  overflow: auto;
+  background: var(--bg);
+}
+
+.plus {
+  color: var(--added-fg);
+}
+
+.minus {
+  color: var(--removed-fg);
+}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { pages, revisions } from '@/server/db/schema';
-import { ContentError, MAX_CONTENT_BYTES, getPage, savePage } from '@/server/services/pages';
+import { ConflictError, ContentError, MAX_CONTENT_BYTES, getPage, savePage } from '@/server/services/pages';
 import { createTestDb } from '../helpers/db';
 
 describe('문서 조회 (T012, AC-1.1, AC-1.5)', () => {
@@ -116,5 +116,96 @@ describe('문서 저장 (T013, AC-2.3, AC-2.4, AC-2.6)', () => {
     expect(() => savePage(db, { fullTitle: '실패할 문서', content: '내용', authorId: 9999 })).toThrow();
     expect(getPage(db, '실패할 문서')).toBeNull();
     expect(db.select().from(pages).all()).toHaveLength(1);
+  });
+});
+
+describe('편집 충돌 (T046, AC-2.5)', () => {
+  function twoRevisions() {
+    const t = createTestDb();
+    const authorId = t.systemUserId;
+    savePage(t.db, { fullTitle: '문서', content: '첫 판', authorId });
+    savePage(t.db, { fullTitle: '문서', content: '둘째 판', authorId });
+    return { ...t, firstId: getPage(t.db, '문서', { rev: 1 })!.revision!.id };
+  }
+
+  it('편집을 시작한 판이 최신 판이면 그대로 저장한다', () => {
+    const { db, systemUserId } = twoRevisions();
+    const baseRevId = getPage(db, '문서')!.revision!.id;
+    expect(
+      savePage(db, { fullTitle: '문서', content: '셋째 판', authorId: systemUserId, baseRevId }),
+    ).toMatchObject({
+      changed: true,
+      revNo: 3,
+    });
+  });
+
+  it('그 사이에 다른 사람이 저장했으면 저장하지 않고 최신 판 정보를 담은 ConflictError', () => {
+    const { db, systemUserId, firstId } = twoRevisions();
+    let caught: unknown;
+    try {
+      savePage(db, { fullTitle: '문서', content: '내 내용', authorId: systemUserId, baseRevId: firstId });
+    } catch (error) {
+      caught = error;
+    }
+    expect(caught).toBeInstanceOf(ConflictError);
+    expect((caught as ConflictError).latest).toMatchObject({
+      revNo: 2,
+      content: '둘째 판',
+      authorName: 'system',
+    });
+    expect(getPage(db, '문서')!.revision!.revNo).toBe(2);
+  });
+
+  it('새 문서를 만들려 했는데 그 사이에 누가 먼저 만들었으면 충돌', () => {
+    const { db, systemUserId } = createTestDb();
+    savePage(db, {
+      fullTitle: '새 문서',
+      content: '먼저 만든 내용',
+      authorId: systemUserId,
+      baseRevId: null,
+    });
+    expect(() =>
+      savePage(db, {
+        fullTitle: '새 문서',
+        content: '늦게 만든 내용',
+        authorId: systemUserId,
+        baseRevId: null,
+      }),
+    ).toThrow(ConflictError);
+    expect(getPage(db, '새 문서')!.revision!.content).toBe('먼저 만든 내용');
+  });
+
+  it('있는 문서인데 편집 시작 판을 모르면(null) 충돌로 본다', () => {
+    const { db, systemUserId } = twoRevisions();
+    expect(() =>
+      savePage(db, { fullTitle: '문서', content: '내 내용', authorId: systemUserId, baseRevId: null }),
+    ).toThrow(ConflictError);
+  });
+
+  it('내 내용이 최신 판과 같으면 충돌이 아니라 "바뀐 것 없음"', () => {
+    const { db, systemUserId, firstId } = twoRevisions();
+    expect(
+      savePage(db, { fullTitle: '문서', content: '둘째 판', authorId: systemUserId, baseRevId: firstId }),
+    ).toMatchObject({ changed: false, revNo: 2 });
+  });
+
+  it('충돌 뒤 최신 판 id로 다시 저장하면 저장된다', () => {
+    const { db, systemUserId, firstId } = twoRevisions();
+    let latestId = 0;
+    try {
+      savePage(db, { fullTitle: '문서', content: '내 내용', authorId: systemUserId, baseRevId: firstId });
+    } catch (error) {
+      latestId = (error as ConflictError).latest.id;
+    }
+    expect(
+      savePage(db, { fullTitle: '문서', content: '내 내용', authorId: systemUserId, baseRevId: latestId }),
+    ).toMatchObject({ changed: true, revNo: 3 });
+  });
+
+  it('baseRevId를 넘기지 않으면(기본 데이터·스크립트) 검사하지 않는다', () => {
+    const { db, systemUserId } = twoRevisions();
+    expect(savePage(db, { fullTitle: '문서', content: '셋째 판', authorId: systemUserId }).changed).toBe(
+      true,
+    );
   });
 });

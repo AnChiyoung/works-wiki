@@ -2,9 +2,11 @@
 
 import Link from 'next/link';
 import { useActionState, useEffect, useRef, useState } from 'react';
+import { DiffView } from '@/components/DiffView';
 import { WikiContent } from '@/components/WikiContent';
+import { formatDateTime } from '@/lib/format';
 import { titleToPath } from '@/server/services/title';
-import { type SaveState, savePageAction } from './actions';
+import { type SaveConflict, type SaveState, savePageAction } from './actions';
 import styles from './EditForm.module.css';
 
 type Props = {
@@ -19,8 +21,39 @@ type Preview =
   | { status: 'done'; html: string }
   | { status: 'error'; message: string };
 
+/** 편집 충돌 안내 (AC-2.5, T046): 최신 판(이전)과 내 내용(이후)의 차이 */
+function ConflictNotice({ fullTitle, conflict }: { fullTitle: string; conflict: SaveConflict }) {
+  return (
+    <section className={styles.conflict} role="alert" aria-label="편집 충돌">
+      <p className={styles.conflictTitle}>다른 사람이 먼저 저장했습니다.</p>
+      <p>
+        최신 판은{' '}
+        <a href={`${titleToPath(fullTitle)}?rev=${conflict.revNo}`} target="_blank" rel="noreferrer">
+          {conflict.revNo}판
+        </a>{' '}
+        ({formatDateTime(new Date(conflict.createdAt))}, {conflict.authorName})입니다. 내가 쓴 내용은 입력창에
+        그대로 있습니다. 아래 차이를 확인하고 필요한 부분을 합친 뒤 다시 저장하면, 입력창의 내용이 최신 판
+        다음 판으로 저장됩니다.
+      </p>
+      {conflict.added + conflict.removed > 0 && (
+        <>
+          <p className={styles.conflictCounts}>
+            최신 판 → 내 내용: <span className={styles.plus}>+{conflict.added}줄</span>{' '}
+            <span className={styles.minus}>−{conflict.removed}줄</span>
+          </p>
+          <div className={styles.conflictDiff}>
+            <DiffView rows={conflict.rows} />
+          </div>
+        </>
+      )}
+    </section>
+  );
+}
+
 export function EditForm({ fullTitle, initialContent, baseRevId }: Props) {
   const [state, formAction, pending] = useActionState<SaveState, FormData>(savePageAction, {});
+  // 충돌이 났으면 다음 저장은 최신 판 기준으로 (T046)
+  const currentBaseRevId = state.conflict?.latestRevId ?? baseRevId;
   // 입력값은 상태로 관리한다. 폼 액션이 끝나면 React가 상태 없는 입력칸을 비우기 때문에,
   // 저장에 실패했을 때 쓰던 내용이 사라지지 않게 하려는 것.
   const [content, setContent] = useState(initialContent);
@@ -70,7 +103,9 @@ export function EditForm({ fullTitle, initialContent, baseRevId }: Props) {
       }}
     >
       <input type="hidden" name="title" value={fullTitle} />
-      <input type="hidden" name="baseRevId" value={baseRevId ?? ''} />
+      <input type="hidden" name="baseRevId" value={currentBaseRevId ?? ''} />
+
+      {state.conflict && <ConflictNotice fullTitle={fullTitle} conflict={state.conflict} />}
 
       <div className={styles.tabs} role="tablist" aria-label="편집 화면">
         <button
@@ -124,7 +159,7 @@ export function EditForm({ fullTitle, initialContent, baseRevId }: Props) {
         />
       </label>
 
-      {state.error && (
+      {state.error && !state.conflict && (
         <p className={styles.error} role="alert">
           {state.error}
         </p>
