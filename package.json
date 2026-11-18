@@ -25,6 +25,7 @@
     "@next/env": "16.4.6",
     "@node-rs/argon2": "^2.2.2",
     "better-sqlite3": "13.2.0",
+    "diff": "^9.0.0",
     "drizzle-orm": "0.45.4",
     "markdown-it": "15.0.3",
     "next": "16.4.6",
