@@ -67,3 +67,99 @@ test.describe('원문 보기 (T040)', () => {
     });
   }
 });
+
+test.describe('이력 화면 (T042, AC-4.1)', () => {
+  test('판·시각·편집자·증감·요약을 최신순으로 보여주고, 판마다 보기 링크가 있다', async ({ page }, info) => {
+    const title = await pageWithThreeRevisions(page, '이력 표', info.project.name);
+    await page.getByRole('link', { name: '이력', exact: true }).click();
+    await expect(page).toHaveURL(wikiPath(title, '/history'));
+    await expect(page).toHaveTitle(`이력: ${title} - 개발 위키`);
+
+    const rows = page.locator('tbody tr');
+    await expect(rows).toHaveCount(3);
+    await expect(rows.nth(0)).toContainText('3판');
+    await expect(rows.nth(2)).toContainText('1판');
+    await expect(rows.nth(2)).toContainText('새 문서');
+    await expect(rows.nth(0)).toContainText(E2E_ADMIN.username);
+    // '첫 번째 판 내용'(21바이트) → '두 번째 판 내용'(21바이트): 2판 증감 0, 1판은 +21
+    await expect(rows.nth(2).locator('[title="21 바이트"]')).toHaveText('+21');
+    await expect(rows.nth(1).locator('[title="0 바이트"]')).toHaveText('0');
+
+    await rows.nth(2).getByRole('link', { name: '1판' }).click();
+    await expect(page).toHaveURL(`${wikiPath(title)}?rev=1`);
+    await expect(page.locator('.wiki-content')).toHaveText('첫 번째 판 내용');
+  });
+
+  test('방문자도 이력 버튼과 이력 화면을 볼 수 있다', async ({ browser }, info) => {
+    const admin = await browser.newContext({ storageState: info.project.use.storageState });
+    const adminPage = await admin.newPage();
+    const title = uniqueTitle('방문자 이력', info.project.name);
+    await createPage(adminPage, title, '내용');
+    await admin.close();
+
+    const visitor = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+    const page = await visitor.newPage();
+    await page.goto(wikiPath(title));
+    await page.getByRole('link', { name: '이력', exact: true }).click();
+    await expect(page.locator('tbody tr')).toHaveCount(1);
+    await visitor.close();
+  });
+
+  test('없는 문서의 이력은 404', async ({ page }, info) => {
+    const res = await page.goto(wikiPath(uniqueTitle('이력 없음', info.project.name), '/history'));
+    expect(res?.status()).toBe(404);
+    await expect(page.getByText('문서가 없어서 이력을 보여줄 수 없습니다.')).toBeVisible();
+  });
+});
+
+test.describe('차이 화면 (T043, AC-4.2)', () => {
+  test('이력에서 두 판을 골라 비교하면 추가·삭제가 +/− 기호와 함께 보인다', async ({ page }, info) => {
+    const title = await pageWithThreeRevisions(page, '비교', info.project.name);
+    await page.goto(wikiPath(title, '/history'));
+    // 기본 선택은 최신 판(3)과 바로 앞 판(2). 이전 판을 1판으로 바꾼다
+    await page.getByRole('radio', { name: '1판을 비교 기준(이전)으로' }).check();
+    await page.getByRole('button', { name: '고른 두 판 비교' }).click();
+    await expect(page).toHaveURL(/\/diff\//);
+    const url = new URL(page.url());
+    expect(url.pathname).toBe(wikiPath(title, '/diff'));
+    expect(url.searchParams.get('from')).toBe('1');
+    expect(url.searchParams.get('to')).toBe('3');
+
+    const removed = page.locator('[data-type="removed"]');
+    const added = page.locator('[data-type="added"]');
+    await expect(removed).toHaveCount(1);
+    await expect(added).toHaveCount(1);
+    await expect(removed).toContainText('−');
+    await expect(removed).toContainText('첫 번째 판 내용');
+    await expect(added).toContainText('+');
+    await expect(added).toContainText('세 번째 판 내용');
+    await expect(page.getByText('+1줄')).toBeVisible();
+    await expect(page.getByText('−1줄')).toBeVisible();
+  });
+
+  test('이력의 "차이" 링크는 바로 앞 판과 비교하고, 1판은 빈 문서와 비교한다', async ({ page }, info) => {
+    const title = await pageWithThreeRevisions(page, '앞 판', info.project.name);
+    await page.goto(wikiPath(title, '/history'));
+    await page.getByRole('link', { name: '2판에서 바뀐 내용' }).click();
+    await expect(page.locator('[data-type="added"]')).toContainText('두 번째 판 내용');
+    await expect(page.locator('[data-type="removed"]')).toContainText('첫 번째 판 내용');
+
+    await page.goto(`${wikiPath(title, '/diff')}?to=1`);
+    await expect(page.getByText('(빈 문서)')).toBeVisible();
+    await expect(page.locator('[data-type="added"]')).toContainText('첫 번째 판 내용');
+  });
+
+  test('같은 판끼리 비교하면 같다고 알려준다', async ({ page }, info) => {
+    const title = await pageWithThreeRevisions(page, '같은 판', info.project.name);
+    await page.goto(`${wikiPath(title, '/diff')}?from=2&to=2`);
+    await expect(page.getByRole('status')).toHaveText('두 판의 내용이 같습니다.');
+  });
+
+  test('없는 판·잘못된 판 번호는 404', async ({ page }, info) => {
+    const title = await pageWithThreeRevisions(page, '잘못된 비교', info.project.name);
+    for (const query of ['?from=1&to=9', '?from=abc', '?to=0']) {
+      const res = await page.goto(`${wikiPath(title, '/diff')}${query}`);
+      expect(res?.status(), query).toBe(404);
+    }
+  });
+});

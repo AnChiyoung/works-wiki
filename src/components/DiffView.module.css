@@ -1,0 +1,82 @@
+.diff {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+  font-family: 'D2Coding', 'JetBrains Mono', Consolas, 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 3.2em 3.2em 1.4em 1fr;
+}
+
+.no {
+  padding: 0 6px;
+  color: var(--muted);
+  text-align: right;
+  user-select: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.mark {
+  text-align: center;
+  user-select: none;
+  font-weight: 700;
+}
+
+.text {
+  padding-right: 8px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.added {
+  background: var(--added-bg);
+}
+
+.added .mark {
+  color: var(--added-fg);
+}
+
+.added .changed {
+  background: var(--added-strong);
+  border-radius: 2px;
+}
+
+.removed {
+  background: var(--removed-bg);
+}
+
+.removed .mark {
+  color: var(--removed-fg);
+}
+
+.removed .changed {
+  background: var(--removed-strong);
+  border-radius: 2px;
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+.skip {
+  padding: 4px 10px;
+  background: var(--surface);
+  color: var(--muted);
+  text-align: center;
+  font-family: inherit;
+  font-size: 0.85rem;
+}
+
+/* 휴대폰: 줄 번호 칸을 좁힌다 */
+@media (max-width: 640px) {
+  .row {
+    grid-template-columns: 2.4em 2.4em 1.2em 1fr;
+  }
+
+  .no {
+    padding: 0 3px;
+    font-size: 0.8rem;
+  }
+}

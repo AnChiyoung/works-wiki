@@ -1,0 +1,81 @@
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-bottom: 16px;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.8rem;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.title a {
+  color: var(--fg);
+  text-decoration: none;
+}
+
+.sub {
+  color: var(--muted);
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+
+.links {
+  display: flex;
+  gap: 12px;
+}
+
+.revs {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 12px;
+}
+
+.revs > div {
+  display: flex;
+  gap: 8px;
+}
+
+.revs dt {
+  flex: none;
+  width: 2.5em;
+  color: var(--muted);
+}
+
+.revs dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.summary {
+  color: var(--muted);
+}
+
+.counts {
+  margin: 0 0 8px;
+  font-variant-numeric: tabular-nums;
+}
+
+.plus {
+  color: var(--added-fg);
+}
+
+.minus {
+  color: var(--removed-fg);
+}
+
+.same {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+}
