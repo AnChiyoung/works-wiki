@@ -21,7 +21,7 @@
 | [specs/001-wiki-core/spec.md](specs/001-wiki-core/spec.md) | 핵심 기능 스펙 (무엇을, 왜). 사용자 스토리와 수용 기준 | 확정 v1 |
 | [specs/001-wiki-core/syntax.md](specs/001-wiki-core/syntax.md) | 문서 문법 명세. 규칙별 입력 → 결과 | 확정 v1 |
 | [specs/001-wiki-core/plan.md](specs/001-wiki-core/plan.md) | 기술 설계 (어떻게). 스택, 데이터 모델, URL, 보안, 운영 | 확정 v1 |
-| [specs/001-wiki-core/tasks.md](specs/001-wiki-core/tasks.md) | 작업 목록. M1 (T001~T026) 완료, M2 (T027~T037) 예정 | 진행 중 |
+| [specs/001-wiki-core/tasks.md](specs/001-wiki-core/tasks.md) | 작업 목록. M1 (T001~T026) 완료, M2 (T027~T037) 마무리 중, M3 (T038~T048) 예정 | 진행 중 |
 
 새 기능은 `specs/002-이름/`처럼 번호를 붙여 같은 구조(spec → plan → tasks)로 추가한다.
 이 구조는 GitHub Spec Kit 같은 스펙 주도 개발 도구의 흐름(specify → plan → tasks → implement)과 대응하므로, 나중에 도구를 도입할 때 그대로 옮길 수 있다.
