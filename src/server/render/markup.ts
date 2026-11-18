@@ -1,4 +1,5 @@
 import MarkdownIt, { type MarkdownIt as MarkdownItInstance } from 'markdown-it';
+import { wikiFootnotePlugin } from './plugins/footnote';
 import { headingsPlugin } from './plugins/headings';
 import { type WikiEnv, wikiLinkPlugin } from './plugins/wikilink';
 import { sanitize } from './sanitize';
@@ -72,6 +73,7 @@ function createMarkdown(): MarkdownItInstance {
   };
 
   md.use(wikiLinkPlugin); // SX-22~27
+  md.use(wikiFootnotePlugin); // SX-31~33
   md.use(headingsPlugin); // SX-10~17
 
   return md;

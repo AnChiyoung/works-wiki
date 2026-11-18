@@ -31,10 +31,14 @@ const OPTIONS: sanitizeHtml.IOptions = {
     'img',
     'span',
     'nav',
+    // 각주 (SX-31)
+    'sup',
+    'section',
   ],
   allowedAttributes: {
     ...Object.fromEntries(HEADINGS.map((h) => [h, ['id', 'class', 'data-level']])),
-    a: ['href', 'title', 'target', 'rel', 'class'],
+    // id는 각주 번호와 되돌아가기 주소(fn1, fnref1)에 쓴다. 원시 HTML은 렌더링 단계에서 글자가 되므로 쓰는 사람이 id를 넣을 수 없다.
+    a: ['href', 'title', 'target', 'rel', 'class', 'id', 'aria-label'],
     img: ['src', 'alt', 'title', 'loading'],
     // ol의 start는 넣지 않는다: 번호 목록은 쓴 숫자와 상관없이 1부터 매긴다 (SX-20)
     th: ['style'],
@@ -42,17 +46,23 @@ const OPTIONS: sanitizeHtml.IOptions = {
     code: ['class'],
     span: ['class'],
     nav: ['id', 'class', 'aria-label'],
-    li: ['class'],
+    li: ['class', 'id'],
+    ol: ['class'],
+    sup: ['class'],
+    section: ['class', 'aria-label'],
     p: ['class'],
   },
   allowedClasses: {
     ...Object.fromEntries(HEADINGS.map((h) => [h, ['wiki-heading']])),
-    a: ['external', 'heading-number', 'wiki-link', 'new'],
+    a: ['external', 'heading-number', 'wiki-link', 'new', 'footnote-backref'],
     code: ['language-*'],
     span: ['heading-text', 'heading-number'],
     nav: ['toc'],
-    li: ['toc-item', 'toc-depth-*'],
-    p: ['toc-title'],
+    li: ['toc-item', 'toc-depth-*', 'footnote-item'],
+    p: ['toc-title', 'footnotes-title'],
+    ol: ['footnotes-list'],
+    sup: ['footnote-ref'],
+    section: ['footnotes'],
   },
   allowedStyles: {
     th: { 'text-align': [/^(left|right|center)$/] },

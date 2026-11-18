@@ -207,3 +207,57 @@ a.heading-number:hover {
   max-width: 100%;
   height: auto;
 }
+
+/* ── 각주 (SX-31~33) ── */
+.wiki-content sup.footnote-ref {
+  font-size: 0.75em;
+  line-height: 0;
+}
+.wiki-content sup.footnote-ref a {
+  padding: 0 0.1em;
+  text-decoration: none;
+}
+.wiki-content section.footnotes {
+  margin-top: 2em;
+  padding-top: 0.75em;
+  border-top: 1px solid var(--border);
+  font-size: 0.92em;
+}
+.wiki-content .footnotes-title {
+  margin: 0 0 0.5em;
+  font-weight: 700;
+}
+.wiki-content ol.footnotes-list {
+  list-style-type: decimal;
+}
+.wiki-content .footnote-item p {
+  display: inline;
+}
+.wiki-content .footnote-item:target {
+  background: var(--surface);
+}
+.wiki-content a.footnote-backref {
+  text-decoration: none;
+}
+
+/* 각주 말풍선은 document.body에 붙는다 (footnote-tooltip.ts) */
+.footnote-tooltip {
+  position: absolute;
+  z-index: 50;
+  max-width: min(360px, calc(100vw - 24px));
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: var(--fg);
+  box-shadow: 0 4px 14px rgb(0 0 0 / 15%);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+.footnote-tooltip p {
+  margin: 0;
+}
+.footnote-tooltip a {
+  color: var(--link);
+}

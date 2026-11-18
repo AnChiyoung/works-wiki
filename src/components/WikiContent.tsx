@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { attachFootnoteTooltips } from './footnote-tooltip';
 
 // 렌더링된 문서 본문. 제목을 누르면 그 문단을 접고 펼친다. (SX-18, T023)
 // HTML은 서버에서 정화(sanitize)를 거친 것만 받는다.
@@ -104,10 +105,12 @@ export function WikiContent({ html }: { html: string }) {
     root.addEventListener('keydown', onKeyDown);
     window.addEventListener('hashchange', onHashChange);
     onHashChange();
+    const detachTooltips = attachFootnoteTooltips(root); // SX-33
     return () => {
       root.removeEventListener('click', onClick);
       root.removeEventListener('keydown', onKeyDown);
       window.removeEventListener('hashchange', onHashChange);
+      detachTooltips();
     };
   }, [html]);
 
