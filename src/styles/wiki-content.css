@@ -145,6 +145,76 @@ a.heading-number:hover {
   color: var(--removed-fg);
 }
 
+/* ── 글자 색·크기 (SX-34~39) ── */
+/* 이름 색은 배경에서 읽히도록 밝은 화면·어두운 화면 값을 따로 둔다 (SX-39). 16진수 색은 쓴 그대로 보인다 */
+:root {
+  --wiki-red: #cf222e;
+  --wiki-orange: #bc4c00;
+  --wiki-yellow: #9a6700;
+  --wiki-green: #1a7f37;
+  --wiki-blue: #0969da;
+  --wiki-navy: #1f3a93;
+  --wiki-purple: #8250df;
+  --wiki-gray: #59636e;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --wiki-red: #ff7b72;
+    --wiki-orange: #ffa657;
+    --wiki-yellow: #e3b341;
+    --wiki-green: #56d364;
+    --wiki-blue: #79c0ff;
+    --wiki-navy: #a5b4fc;
+    --wiki-purple: #d2a8ff;
+    --wiki-gray: #9198a1;
+  }
+}
+.wiki-content .wiki-color-red {
+  color: var(--wiki-red);
+}
+.wiki-content .wiki-color-orange {
+  color: var(--wiki-orange);
+}
+.wiki-content .wiki-color-yellow {
+  color: var(--wiki-yellow);
+}
+.wiki-content .wiki-color-green {
+  color: var(--wiki-green);
+}
+.wiki-content .wiki-color-blue {
+  color: var(--wiki-blue);
+}
+.wiki-content .wiki-color-navy {
+  color: var(--wiki-navy);
+}
+.wiki-content .wiki-color-purple {
+  color: var(--wiki-purple);
+}
+.wiki-content .wiki-color-gray {
+  color: var(--wiki-gray);
+}
+.wiki-content .wiki-size-m2 {
+  font-size: 0.75em;
+}
+.wiki-content .wiki-size-m1 {
+  font-size: 0.875em;
+}
+.wiki-content .wiki-size-p1 {
+  font-size: 1.125em;
+}
+.wiki-content .wiki-size-p2 {
+  font-size: 1.25em;
+}
+.wiki-content .wiki-size-p3 {
+  font-size: 1.5em;
+}
+.wiki-content .wiki-size-p4 {
+  font-size: 1.75em;
+}
+.wiki-content .wiki-size-p5 {
+  font-size: 2em;
+}
+
 /* ── 코드 (SX-4, SX-6. 문법 강조는 M4) ── */
 .wiki-content code {
   font-family: 'D2Coding', 'JetBrains Mono', Consolas, 'Courier New', monospace;

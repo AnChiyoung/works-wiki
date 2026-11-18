@@ -2,6 +2,7 @@ import MarkdownIt, { type MarkdownIt as MarkdownItInstance } from 'markdown-it';
 import { wikiFootnotePlugin } from './plugins/footnote';
 import { headingsPlugin } from './plugins/headings';
 import { type WikiEnv, wikiLinkPlugin } from './plugins/wikilink';
+import { wikiStylePlugin } from './plugins/style';
 import { sanitize } from './sanitize';
 
 // 위키 원문 → 안전한 HTML. 규칙: specs/001-wiki-core/syntax.md
@@ -73,6 +74,7 @@ function createMarkdown(): MarkdownItInstance {
   };
 
   md.use(wikiLinkPlugin); // SX-22~27
+  md.use(wikiStylePlugin); // SX-34~38
   md.use(wikiFootnotePlugin); // SX-31~33
   md.use(headingsPlugin); // SX-10~17
 

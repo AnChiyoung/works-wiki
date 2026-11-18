@@ -1,4 +1,5 @@
 import sanitizeHtml from 'sanitize-html';
+import { STYLE_CLASSES } from './plugins/style';
 
 // 렌더러가 만든 HTML을 허용 목록 방식으로 한 번 더 걸러낸다. (원칙 5, SX-46~48)
 // 원시 HTML은 markdown-it 단계에서 이미 글자로 바뀌지만, 플러그인 실수까지 막기 위한 이중 방어다.
@@ -44,7 +45,8 @@ const OPTIONS: sanitizeHtml.IOptions = {
     th: ['style'],
     td: ['style'],
     code: ['class'],
-    span: ['class'],
+    // style은 글자 색(SX-35)에만 쓴다. 아래 allowedStyles가 검증한 16진수 color 말고는 모두 지운다 (SX-48)
+    span: ['class', 'style'],
     nav: ['id', 'class', 'aria-label'],
     li: ['class', 'id'],
     ol: ['class'],
@@ -56,7 +58,7 @@ const OPTIONS: sanitizeHtml.IOptions = {
     ...Object.fromEntries(HEADINGS.map((h) => [h, ['wiki-heading']])),
     a: ['external', 'heading-number', 'wiki-link', 'new', 'footnote-backref'],
     code: ['language-*'],
-    span: ['heading-text', 'heading-number'],
+    span: ['heading-text', 'heading-number', ...STYLE_CLASSES],
     nav: ['toc'],
     li: ['toc-item', 'toc-depth-*', 'footnote-item'],
     p: ['toc-title', 'footnotes-title'],
@@ -67,6 +69,7 @@ const OPTIONS: sanitizeHtml.IOptions = {
   allowedStyles: {
     th: { 'text-align': [/^(left|right|center)$/] },
     td: { 'text-align': [/^(left|right|center)$/] },
+    span: { color: [/^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/] },
   },
   allowedSchemes: ['http', 'https', 'mailto'],
   allowedSchemesByTag: { img: ['https'] },
